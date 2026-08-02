@@ -1,0 +1,22 @@
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { AuditService } from './audit.service';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
+
+@ApiTags('Audit Logs')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Controller('audit-logs')
+export class AuditController {
+  constructor(private readonly auditService: AuditService) {}
+
+  @Get()
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'View system audit logs (Admin only)' })
+  findAll() {
+    return this.auditService.findAll();
+  }
+}

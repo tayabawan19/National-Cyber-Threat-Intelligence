@@ -1,0 +1,244 @@
+// Prisma Schema for Cyber Threat Intelligence Platform (Phase 3 Extended)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SOC_ANALYST
+  INVESTIGATOR
+  READ_ONLY
+}
+
+enum CaseStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+enum AlertStatus {
+  NEW
+  TRIAGED
+  RESOLVED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IocType {
+  IP
+  DOMAIN
+  HASH
+  URL
+}
+
+enum RuleCorrelationType {
+  SIMPLE
+  MULTI_CONDITION
+  THRESHOLD
+  CORRELATION
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  role         Role       @default(READ_ONLY)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  assignedCases Case[]     @relation("AssignedAnalyst")
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+model Case {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      CaseStatus @default(OPEN)
+  severity    Severity   @default(MEDIUM)
+  
+  assignedToId String?   @map("assigned_to_id")
+  assignedTo   User?     @relation("AssignedAnalyst", fields: [assignedToId], references: [id], onDelete: SetNull)
+  
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  alerts       Alert[]
+  iocs         Ioc[]
+
+  @@map("cases")
+}
+
+model Alert {
+  id                   String         @id @default(uuid())
+  source               String
+  description          String
+  severity             Severity       @default(MEDIUM)
+  status               AlertStatus    @default(NEW)
+  score                Float          @default(0.0)
+  occurrenceCount      Int            @default(1) @map("occurrence_count")
+  lastSeen             DateTime       @default(now()) @map("last_seen")
+  llmExplanation       String?        @db.Text @map("llm_explanation")
+  llmSuggestedSeverity Severity?      @map("llm_suggested_severity")
+  
+  sourceIocId          String?        @map("source_ioc_id")
+  sourceIoc            Ioc?           @relation(fields: [sourceIocId], references: [id], onDelete: SetNull)
+  sourceCveId          String?        @map("source_cve_id")
+  sourceCve            Cve?           @relation(fields: [sourceCveId], references: [id], onDelete: SetNull)
+  sourceMalwareId      String?        @map("source_malware_id")
+  sourceMalware        MalwareSample? @relation(fields: [sourceMalwareId], references: [id], onDelete: SetNull)
+  
+  ruleId               String?        @map("rule_id")
+  rule                 DetectionRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+  
+  relatedCaseId        String?        @map("related_case_id")
+  relatedCase          Case?          @relation(fields: [relatedCaseId], references: [id], onDelete: SetNull)
+
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+
+  @@map("alerts")
+}
+
+model DetectionRule {
+  id              String              @id @default(uuid())
+  name            String              @unique
+  description     String?
+  condition       Json
+  severity        Severity            @default(HIGH)
+  correlationType RuleCorrelationType @default(SIMPLE) @map("correlation_type")
+  enabled         Boolean             @default(true)
+
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  alerts          Alert[]
+
+  @@map("detection_rules")
+}
+
+model Ioc {
+  id            String          @id @default(uuid())
+  type          IocType
+  value         String          @unique
+  source        String
+  firstSeen     DateTime        @default(now()) @map("first_seen")
+  lastSeen      DateTime        @default(now()) @map("last_seen")
+  tags          String[]        @default([])
+  country       String?
+  city          String?
+  latitude      Float?
+  longitude     Float?
+  rawPayload    Json?           @map("raw_payload")
+  relatedCaseId String?         @map("related_case_id")
+  relatedCase   Case?           @relation(fields: [relatedCaseId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  alerts        Alert[]
+  malwareSamples MalwareSample[]
+
+  @@map("iocs")
+}
+
+model MalwareSample {
+  id            String    @id @default(uuid())
+  name          String
+  malwareFamily String?   @map("malware_family")
+  hashMd5       String?   @map("hash_md5")
+  hashSha1      String?   @map("hash_sha1")
+  hashSha256    String    @unique @map("hash_sha256")
+  fileType      String?   @map("file_type")
+  firstSeen     DateTime? @default(now()) @map("first_seen")
+  lastSeen      DateTime? @default(now()) @map("last_seen")
+  source        String
+  tags          String[]  @default([])
+  
+  relatedIocId  String?   @map("related_ioc_id")
+  relatedIoc    Ioc?      @relation(fields: [relatedIocId], references: [id], onDelete: SetNull)
+  relatedCveIds String[]  @default([]) @map("related_cve_ids")
+  rawPayload    Json?     @map("raw_payload")
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  alerts        Alert[]
+
+  @@map("malware_samples")
+}
+
+model Cve {
+  id               String    @id @default(uuid())
+  cveId            String    @unique @map("cve_id")
+  description      String?   @db.Text
+  cvssScore        Float?    @map("cvss_score")
+  publishedDate    DateTime? @map("published_date")
+  lastModifiedDate DateTime? @map("last_modified_date")
+  source           String
+  rawPayload       Json?     @map("raw_payload")
+
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  alerts           Alert[]
+
+  @@map("cves")
+}
+
+model ThreatFeed {
+  id           String    @id @default(uuid())
+  name         String    @unique
+  type         String
+  baseUrl      String    @map("base_url")
+  enabled      Boolean   @default(true)
+  lastSyncedAt DateTime? @map("last_synced_at")
+
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  syncLogs     FeedSyncLog[]
+
+  @@map("threat_feeds")
+}
+
+model FeedSyncLog {
+  id              String     @id @default(uuid())
+  feedId          String     @map("feed_id")
+  feed            ThreatFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  startedAt       DateTime   @default(now()) @map("started_at")
+  finishedAt      DateTime?  @map("finished_at")
+  status          String
+  recordsIngested Int        @default(0) @map("records_ingested")
+  errorMessage    String?    @db.Text @map("error_message")
+
+  createdAt       DateTime   @default(now()) @map("created_at")
+
+  @@map("feed_sync_logs")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action       String
+  targetEntity String   @map("target_entity")
+  targetId     String?  @map("target_id")
+  ipAddress    String?  @map("ip_address")
+  timestamp    DateTime @default(now())
+
+  @@map("audit_logs")
+}

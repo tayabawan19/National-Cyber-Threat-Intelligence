@@ -1,0 +1,171 @@
+# ==============================================================================
+# NATIONAL CYBER THREAT INTELLIGENCE PLATFORM — DOCKER COMPOSE ORCHESTRATION
+# ==============================================================================
+# Service Architecture Overview:
+#
+# 1. postgres:
+#    Self-hosted PostgreSQL 16 database storing Core Entities (users, roles, 
+#    cases, alerts, iocs, and audit_logs). Configured with persistent volumes.
+#
+# 2. redis:
+#    Self-hosted Redis 7 in-memory cache broker powering background job 
+#    queues (BullMQ) for async tasks.
+#
+# 3. backend:
+#    NestJS TypeScript REST API service. Runs health check wait loop for 
+#    Postgres before running Prisma database migrations and seeding the default 
+#    Admin account. Serves Swagger API docs at /api/docs on port 3000.
+#
+# 4. frontend:
+#    Vite + React + TypeScript web application serving the SOC Analyst 
+#    Login and Protected Shell dashboard on port 5173.
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. PostgreSQL Database Service
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: threat_intel_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_secure_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-threat_intel_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-threat_intel_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - threat_intel_network
+
+  # ----------------------------------------------------------------------------
+  # 2. Redis Cache & Job Queue Broker
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: threat_intel_redis
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - threat_intel_network
+
+  # ----------------------------------------------------------------------------
+  # 3. NestJS REST API Backend Service
+  # ----------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: threat_intel_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_secure_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-threat_intel_db}
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_secure_pass_2026}@postgres:5432/${POSTGRES_DB:-threat_intel_db}?schema=public"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_cyber_intel_2026_change_in_production}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-1h}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-super_secret_refresh_jwt_key_cyber_intel_2026}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
+      BCRYPT_SALT_ROUNDS: ${BCRYPT_SALT_ROUNDS:-10}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@cyberintel.gov}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-AdminSecurePass123!}
+      OPENSEARCH_NODE: ${OPENSEARCH_NODE:-http://opensearch:9200}
+      OTX_API_KEY: ${OTX_API_KEY:-}
+      NVD_API_KEY: ${NVD_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - threat_intel_network
+
+  # ----------------------------------------------------------------------------
+  # 4. React + Vite Frontend Shell Service
+  # ----------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: threat_intel_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: http://localhost:3000/api
+    depends_on:
+      - backend
+    networks:
+      - threat_intel_network
+
+  # ----------------------------------------------------------------------------
+  # 5. OpenSearch Service (Search Mirror)
+  # NOTE: Single-node local development configuration with security plugin disabled.
+  # MUST be hardened with TLS, security plugin, and cluster auth before production deployment!
+  # ----------------------------------------------------------------------------
+  opensearch:
+    image: opensearchproject/opensearch:2.13.0
+    container_name: threat_intel_opensearch
+    restart: always
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node1
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - DISABLE_SECURITY_PLUGIN=true
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - threat_intel_network
+
+networks:
+  threat_intel_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  opensearch_data:
+

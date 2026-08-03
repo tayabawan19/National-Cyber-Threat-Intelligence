@@ -17,6 +17,8 @@ import { DetectionEngineModule } from './detection-engine/detection-engine.modul
 import { DetectionRulesModule } from './detection-rules/detection-rules.module';
 import { MalwareModule } from './malware/malware.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ForensicsModule } from './forensics/forensics.module';
+import { SiemModule } from './siem/siem.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -51,6 +53,8 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     DetectionRulesModule,
     MalwareModule,
     DashboardModule,
+    ForensicsModule,
+    SiemModule,
   ],
   providers: [
     {

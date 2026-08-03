@@ -17,6 +17,9 @@ import {
   ChevronRight,
   Send,
   Calendar,
+  FileText,
+  Lock,
+  FileSearch,
 } from 'lucide-react';
 
 interface CasesViewProps {
@@ -28,9 +31,11 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
   const [cases, setCases] = useState<any[]>([]);
   const [selectedCase, setSelectedCase] = useState<any | null>(null);
   const [timeline, setTimeline] = useState<any[]>([]);
+  const [forensicArtifacts, setForensicArtifacts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [timelineLoading, setTimelineLoading] = useState(false);
-  const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'alerts' | 'iocs' | 'cves' | 'malware' | 'timeline'>('overview');
+  const [forensicsLoading, setForensicsLoading] = useState(false);
+  const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'alerts' | 'iocs' | 'cves' | 'malware' | 'timeline' | 'forensics'>('overview');
 
   // New Case Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -38,9 +43,23 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
   const [newDescription, setNewDescription] = useState('');
   const [newSeverity, setNewSeverity] = useState('MEDIUM');
 
+  // Forensics Modals State
+  const [showArtifactModal, setShowArtifactModal] = useState(false);
+  const [artifactType, setArtifactType] = useState('LOG_FILE');
+  const [artifactDesc, setArtifactDesc] = useState('');
+  const [artifactHash, setArtifactHash] = useState('');
+  const [initialAction, setInitialAction] = useState('Collected and attached to investigation case');
+
+  const [selectedArtifactForCustody, setSelectedArtifactForCustody] = useState<any | null>(null);
+  const [showCustodyModal, setShowCustodyModal] = useState(false);
+  const [custodyActionText, setCustodyActionText] = useState('');
+
   // New Note State
   const [newNote, setNewNote] = useState('');
   const [sendingNote, setSendingNote] = useState(false);
+
+  // RBAC Permission Check
+  const canManageForensics = userRole === 'INVESTIGATOR' || userRole === 'ADMIN';
 
   // Filters
   const [filterStatus, setFilterStatus] = useState('');
@@ -77,6 +96,7 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
       if (data && data.id) {
         setSelectedCase(data);
         fetchCaseTimeline(id);
+        fetchForensics(id);
       }
     } catch (err) {
       console.error('Failed to fetch case detail', err);
@@ -95,6 +115,85 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
       console.error('Failed to fetch case timeline', err);
     } finally {
       setTimelineLoading(false);
+    }
+  };
+
+  const fetchForensics = async (caseId: string) => {
+    setForensicsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/forensics/cases/${caseId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setForensicArtifacts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to fetch forensic artifacts', err);
+    } finally {
+      setForensicsLoading(false);
+    }
+  };
+
+  const handleAddArtifact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canManageForensics || !selectedCase) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/forensics/artifacts`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          caseId: selectedCase.id,
+          artifactType,
+          description: artifactDesc,
+          hash: artifactHash,
+          initialAction,
+        }),
+      });
+
+      if (res.ok) {
+        setShowArtifactModal(false);
+        setArtifactDesc('');
+        setArtifactHash('');
+        fetchForensics(selectedCase.id);
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to add forensic artifact');
+      }
+    } catch (err) {
+      console.error('Error adding forensic artifact', err);
+    }
+  };
+
+  const handleAppendCustody = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canManageForensics || !selectedArtifactForCustody || !custodyActionText) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/forensics/artifacts/${selectedArtifactForCustody.id}/custody`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: custodyActionText,
+        }),
+      });
+
+      if (res.ok) {
+        setShowCustodyModal(false);
+        setCustodyActionText('');
+        setSelectedArtifactForCustody(null);
+        if (selectedCase) fetchForensics(selectedCase.id);
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to append chain-of-custody action');
+      }
+    } catch (err) {
+      console.error('Error appending chain of custody', err);
     }
   };
 
@@ -381,6 +480,13 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
                 <Clock className="w-3.5 h-3.5" />
                 <span>Audit Timeline ({timeline.length})</span>
               </button>
+              <button
+                onClick={() => setActiveDetailTab('forensics')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition flex items-center gap-1.5 ${activeDetailTab === 'forensics' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                <FileSearch className="w-3.5 h-3.5" />
+                <span>Forensics ({forensicArtifacts.length})</span>
+              </button>
             </div>
 
             {/* TAB 1: OVERVIEW */}
@@ -546,6 +652,110 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
                 )}
               </div>
             )}
+
+            {/* TAB 7: DIGITAL FORENSICS & APPEND-ONLY CHAIN OF CUSTODY */}
+            {activeDetailTab === 'forensics' && (
+              <div className="space-y-4 text-xs font-mono">
+                <div className="flex items-center justify-between bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-blue-400" />
+                      <span>Digital Forensics & Append-Only Custody Log</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Immutable forensic artifact registry with append-only chain-of-custody tracking.
+                    </p>
+                  </div>
+
+                  {canManageForensics ? (
+                    <button
+                      onClick={() => setShowArtifactModal(true)}
+                      className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg flex items-center gap-1.5 transition"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Attach Artifact</span>
+                    </button>
+                  ) : (
+                    <span className="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold">
+                      RBAC Restricted (Read-Only)
+                    </span>
+                  )}
+                </div>
+
+                {forensicsLoading ? (
+                  <div className="p-8 text-center text-slate-500">Loading forensic artifacts...</div>
+                ) : forensicArtifacts.length === 0 ? (
+                  <div className="p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800/60">
+                    No forensic artifacts attached to this case yet.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {forensicArtifacts.map((art) => (
+                      <div key={art.id} className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">
+                              {art.artifactType}
+                            </span>
+                            <span className="text-slate-300 font-bold text-xs">Artifact ID: {art.id.slice(0, 8)}...</span>
+                          </div>
+                          <span className="text-[10px] text-slate-500">
+                            Collected by <strong className="text-slate-300">{art.collectedBy}</strong> on {new Date(art.collectedAt).toLocaleString()}
+                          </span>
+                        </div>
+
+                        {art.description && (
+                          <p className="text-slate-300 text-xs">{art.description}</p>
+                        )}
+
+                        {art.hash && (
+                          <div className="p-2 rounded bg-slate-900 border border-slate-800 font-mono text-[11px] text-slate-400 flex items-center justify-between">
+                            <span>Hash Digest (Verification):</span>
+                            <span className="text-emerald-400 font-bold">{art.hash}</span>
+                          </div>
+                        )}
+
+                        {/* Chain of custody timeline */}
+                        <div className="pt-2">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                              Chain of Custody History Trail ({Array.isArray(art.chainOfCustody) ? art.chainOfCustody.length : 0})
+                            </span>
+                            {canManageForensics && (
+                              <button
+                                onClick={() => {
+                                  setSelectedArtifactForCustody(art);
+                                  setShowCustodyModal(true);
+                                }}
+                                className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-blue-400 text-[10px] font-bold transition flex items-center gap-1 border border-slate-700"
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>Append Custody Action</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="relative pl-4 space-y-2 border-l-2 border-slate-800">
+                            {Array.isArray(art.chainOfCustody) && art.chainOfCustody.map((cEntry: any, idx: number) => (
+                              <div key={idx} className="relative text-[11px]">
+                                <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-blue-400 border border-slate-900"></div>
+                                <div className="p-2 rounded bg-slate-900/60 border border-slate-800/60 flex items-center justify-between gap-2">
+                                  <div>
+                                    <span className="text-blue-400 font-bold">{cEntry.user}</span>
+                                    <span className="text-slate-300 ml-2">{cEntry.action}</span>
+                                  </div>
+                                  <span className="text-slate-500 text-[10px] shrink-0">{new Date(cEntry.timestamp).toLocaleString()}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800/60 rounded-2xl p-12 text-center text-slate-500 font-mono text-xs flex flex-col items-center justify-center min-h-[400px]">
@@ -618,6 +828,134 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
                   className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition shadow-lg shadow-blue-600/20"
                 >
                   Create Case
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Attach Artifact Modal */}
+      {showArtifactModal && canManageForensics && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-100 font-mono">Attach Forensic Artifact</h3>
+              <button onClick={() => setShowArtifactModal(false)} className="text-slate-400 hover:text-slate-200">
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddArtifact} className="space-y-4 text-xs font-mono">
+              <div>
+                <label className="block text-slate-400 mb-1">Artifact Type</label>
+                <select
+                  value={artifactType}
+                  onChange={(e) => setArtifactType(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none"
+                >
+                  <option value="LOG_FILE">LOG_FILE</option>
+                  <option value="MEMORY_DUMP_META">MEMORY_DUMP_META</option>
+                  <option value="NETWORK_CAPTURE_META">NETWORK_CAPTURE_META</option>
+                  <option value="FILE_METADATA">FILE_METADATA</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">Description / Metadata</label>
+                <textarea
+                  rows={3}
+                  placeholder="Details of artifact acquisition, file path, source host..."
+                  value={artifactDesc}
+                  onChange={(e) => setArtifactDesc(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">Cryptographic Hash (SHA256 / MD5)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                  value={artifactHash}
+                  onChange={(e) => setArtifactHash(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">Initial Chain of Custody Action</label>
+                <input
+                  type="text"
+                  required
+                  value={initialAction}
+                  onChange={(e) => setInitialAction(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="pt-3 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowArtifactModal(false)}
+                  className="flex-1 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition shadow-lg shadow-blue-600/20"
+                >
+                  Save Artifact
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Append Custody Action Modal */}
+      {showCustodyModal && canManageForensics && selectedArtifactForCustody && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-100 font-mono">Append Chain of Custody Action</h3>
+              <button onClick={() => setShowCustodyModal(false)} className="text-slate-400 hover:text-slate-200">
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAppendCustody} className="space-y-4 text-xs font-mono">
+              <div className="p-3 rounded bg-slate-950 border border-slate-800">
+                <span className="text-[10px] text-slate-500 block">TARGET ARTIFACT</span>
+                <span className="text-slate-200 font-bold text-xs">{selectedArtifactForCustody.artifactType} ({selectedArtifactForCustody.id.slice(0, 8)}...)</span>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">Custody Action Description</label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="e.g. Transferred memory dump copy to forensic workstation B for volatility analysis"
+                  value={custodyActionText}
+                  onChange={(e) => setCustodyActionText(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="pt-3 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCustodyModal(false)}
+                  className="flex-1 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition shadow-lg shadow-blue-600/20"
+                >
+                  Append Action
                 </button>
               </div>
             </form>

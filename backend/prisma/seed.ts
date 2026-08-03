@@ -78,6 +78,12 @@ async function main() {
       baseUrl: 'https://mb-api.abuse.ch/api/v1',
       enabled: true,
     },
+    {
+      name: 'MISP Threat Sharing',
+      type: 'THREAT_SHARING',
+      baseUrl: 'http://localhost:8443',
+      enabled: true,
+    },
   ];
 
   for (const feed of initialFeeds) {

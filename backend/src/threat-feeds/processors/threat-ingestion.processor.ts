@@ -6,6 +6,7 @@ import { OtxProcessorService } from './otx.processor';
 import { NvdProcessorService } from './nvd.processor';
 import { AbuseChProcessorService } from './abusech.processor';
 import { MalwareProcessorService } from './malware.processor';
+import { MispProcessorService } from './misp.processor';
 
 @Processor(THREAT_INGESTION_QUEUE)
 export class ThreatIngestionProcessor extends WorkerHost {
@@ -16,6 +17,7 @@ export class ThreatIngestionProcessor extends WorkerHost {
     private nvdProcessor: NvdProcessorService,
     private abuseChProcessor: AbuseChProcessorService,
     private malwareProcessor: MalwareProcessorService,
+    private mispProcessor: MispProcessorService,
   ) {
     super();
   }
@@ -37,6 +39,10 @@ export class ThreatIngestionProcessor extends WorkerHost {
 
     if (job.name === 'sync-malware') {
       return this.malwareProcessor.processMalwareJob(job);
+    }
+
+    if (job.name === 'sync-misp') {
+      return this.mispProcessor.processMispJob(job);
     }
 
     this.logger.warn(`Unknown job name '${job.name}' passed to ThreatIngestionProcessor`);

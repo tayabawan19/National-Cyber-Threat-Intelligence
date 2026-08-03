@@ -16,6 +16,13 @@ enum Role {
   READ_ONLY
 }
 
+enum ForensicArtifactType {
+  LOG_FILE
+  MEMORY_DUMP_META
+  NETWORK_CAPTURE_META
+  FILE_METADATA
+}
+
 enum CaseStatus {
   OPEN
   IN_PROGRESS
@@ -76,8 +83,9 @@ model Case {
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
-  alerts       Alert[]
-  iocs         Ioc[]
+  alerts            Alert[]
+  iocs              Ioc[]
+  forensicArtifacts ForensicArtifact[]
 
   @@map("cases")
 }
@@ -104,10 +112,12 @@ model Alert {
   ruleId               String?        @map("rule_id")
   rule                 DetectionRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
   
-  relatedCaseId        String?        @map("related_case_id")
-  relatedCase          Case?          @relation(fields: [relatedCaseId], references: [id], onDelete: SetNull)
+  relatedCaseId        String?            @map("related_case_id")
+  relatedCase          Case?              @relation(fields: [relatedCaseId], references: [id], onDelete: SetNull)
 
-  createdAt            DateTime       @default(now()) @map("created_at")
+  forensicArtifacts    ForensicArtifact[]
+
+  createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime       @updatedAt @map("updated_at")
 
   @@map("alerts")
@@ -149,8 +159,9 @@ model Ioc {
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
 
-  alerts        Alert[]
-  malwareSamples MalwareSample[]
+  alerts            Alert[]
+  malwareSamples    MalwareSample[]
+  forensicArtifacts ForensicArtifact[]
 
   @@map("iocs")
 }
@@ -241,4 +252,27 @@ model AuditLog {
   timestamp    DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+model ForensicArtifact {
+  id             String               @id @default(uuid())
+  caseId         String               @map("case_id")
+  case           Case                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  artifactType   ForensicArtifactType @map("artifact_type")
+  description    String?
+  hash           String?
+  collectedBy    String               @map("collected_by")
+  collectedAt    DateTime             @default(now()) @map("collected_at")
+  chainOfCustody Json                 @map("chain_of_custody")
+
+  relatedIocId   String?              @map("related_ioc_id")
+  relatedIoc     Ioc?                 @relation(fields: [relatedIocId], references: [id], onDelete: SetNull)
+
+  relatedAlertId String?              @map("related_alert_id")
+  relatedAlert   Alert?               @relation(fields: [relatedAlertId], references: [id], onDelete: SetNull)
+
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  @@map("forensic_artifacts")
 }

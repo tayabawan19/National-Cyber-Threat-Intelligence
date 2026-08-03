@@ -64,6 +64,8 @@ export class ThreatFeedsService {
       jobName = 'sync-nvd';
     } else if (nameLower.includes('abuse')) {
       jobName = 'sync-abusech';
+    } else if (nameLower.includes('misp')) {
+      jobName = 'sync-misp';
     } else {
       throw new Error(`Unknown feed sync worker for feed '${feed.name}'`);
     }

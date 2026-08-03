@@ -160,6 +160,45 @@ services:
     networks:
       - threat_intel_network
 
+  # ----------------------------------------------------------------------------
+  # 6. MISP Dedicated MariaDB Database Service
+  # ----------------------------------------------------------------------------
+  misp_db:
+    image: mariadb:10.11
+    container_name: threat_intel_misp_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: misp
+      MYSQL_USER: misp
+      MYSQL_PASSWORD: misp_secure_db_pass_2026
+      MYSQL_ROOT_PASSWORD: misp_root_secure_pass_2026
+    volumes:
+      - misp_db_data:/var/lib/mysql
+    networks:
+      - threat_intel_network
+
+  # ----------------------------------------------------------------------------
+  # 7. MISP Threat-Sharing Platform Service
+  # ----------------------------------------------------------------------------
+  misp:
+    image: 0xiso/misp:latest
+    container_name: threat_intel_misp
+    restart: always
+    ports:
+      - "8443:80"
+    environment:
+      - MYSQL_DB_HOST=misp_db
+      - MYSQL_DB_PORT=3306
+      - MYSQL_DB_USER=misp
+      - MYSQL_DB_PASSWORD=misp_secure_db_pass_2026
+      - MISP_BASEURL=http://localhost:8443
+      - MISP_ADMIN_EMAIL=admin@admin.test
+      - MISP_ADMIN_PASSPHRASE=AdminSecurePassMISP2026!
+    depends_on:
+      - misp_db
+    networks:
+      - threat_intel_network
+
 networks:
   threat_intel_network:
     driver: bridge
@@ -168,4 +207,5 @@ volumes:
   postgres_data:
   redis_data:
   opensearch_data:
+  misp_db_data:
 

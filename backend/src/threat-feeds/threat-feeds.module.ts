@@ -9,6 +9,7 @@ import { OtxProcessorService } from './processors/otx.processor';
 import { NvdProcessorService } from './processors/nvd.processor';
 import { AbuseChProcessorService } from './processors/abusech.processor';
 import { MalwareProcessorService } from './processors/malware.processor';
+import { MispProcessorService } from './processors/misp.processor';
 import { DetectionEngineModule } from '../detection-engine/detection-engine.module';
 
 @Module({
@@ -28,6 +29,7 @@ import { DetectionEngineModule } from '../detection-engine/detection-engine.modu
     NvdProcessorService,
     AbuseChProcessorService,
     MalwareProcessorService,
+    MispProcessorService,
   ],
   exports: [ThreatFeedsService],
 })

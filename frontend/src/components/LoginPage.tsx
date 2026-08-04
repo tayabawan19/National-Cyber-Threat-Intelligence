@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Shield, Lock, Mail, AlertTriangle, Server, ArrowRight } from 'lucide-react';
+import { Shield, Lock, Mail, AlertTriangle, Server, ArrowRight, Activity, Terminal } from 'lucide-react';
+import { CyberCellHeroBg } from './CyberCellHeroBg';
+import { MatrixRainBg } from './MatrixRainBg';
 
 export const LoginPage: React.FC = () => {
   const { login, error, clearError, isLoading } = useAuth();
@@ -23,86 +25,93 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#090d16]">
-      {/* Dynamic Background Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#031406] font-mono text-terminal-green">
+      {/* Animated Matrix Digital Rain Background */}
+      <MatrixRainBg opacity={0.35} />
+
+      {/* Generative Cyber Cell Hero Background (Skyline, Shield, Network Web) */}
+      <CyberCellHeroBg variant="full" />
+
+      {/* CRT Scanline Overlay */}
+      <div className="fixed inset-0 bg-crt-scanlines pointer-events-none z-50 opacity-40" />
 
       {/* Main Container */}
-      <div className="w-full max-full max-w-md relative z-10">
-        {/* Logo & Platform Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 mb-4 shadow-lg shadow-blue-500/5">
-            <Shield className="w-10 h-10 text-blue-400" />
+      <div className="w-full max-w-md relative z-10 font-mono">
+        {/* Logo & Terminal Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center p-3 rounded-xl bg-terminal-surface border border-terminal-border mb-3 shadow-xl text-terminal-green text-glow-green">
+            <Terminal className="w-8 h-8 text-terminal-green" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-100 tracking-tight">
-            National Cyber Threat Intelligence
+          <h1 className="text-xl font-bold text-terminal-green text-glow-green tracking-tight flex items-center justify-center gap-2 font-mono">
+            <span>ctip-sec-node-01:~# auth</span>
           </h1>
-          <p className="text-xs uppercase tracking-widest text-slate-400 font-mono mt-1">
-            SOC Operations & Intelligence Hub • Phase 1
+          <p className="text-[11px] uppercase tracking-widest text-terminal-green-dim font-mono mt-1">
+            NATIONAL CYBER THREAT OPERATIONS CELL
           </p>
         </div>
 
-        {/* Form Card */}
-        <div className="glass-panel p-8 rounded-2xl shadow-2xl">
-          <div className="mb-6 flex items-center justify-between border-b border-slate-800 pb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-200">Analyst Sign In</h2>
-              <p className="text-xs text-slate-400">Authenticate with JWT security token</p>
+        {/* Terminal Login Box */}
+        <div className="soc-card p-6 rounded-xl border border-terminal-border shadow-2xl bg-[#0a0f0a]/95 space-y-5">
+          {/* Header Box motif */}
+          <div className="flex items-center justify-between border-b border-terminal-border pb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-terminal-green text-xs font-bold font-mono">┌─[ SYSTEM_AUTHENTICATION ]</span>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              SYSTEM ONLINE
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-terminal-green-dark text-terminal-green border border-terminal-border">
+              <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
+              ONLINE
             </span>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-3">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div className="p-3 rounded-lg bg-red-950/60 border border-red-500/50 text-red-400 text-xs flex items-start gap-2.5 font-mono">
+              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-semibold">Authentication Error</p>
-                <p className="mt-0.5 opacity-90">{error}</p>
+                <p className="font-bold text-red-300">AUTHENTICATION_ERROR</p>
+                <p className="mt-0.5 text-[11px] opacity-90">{error}</p>
               </div>
               <button
                 onClick={clearError}
-                className="text-red-400 hover:text-red-200 text-xs font-mono font-bold"
+                className="text-red-400 hover:text-red-200 text-xs font-bold"
               >
                 ✕
               </button>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs font-mono">
             <div>
-              <label className="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-2">
-                Analyst Email
+              <label className="block text-[11px] font-mono text-terminal-green-dim uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>user@ctip-sec:~$ input_email</span>
+                <span className="text-[10px] text-terminal-muted">[REQ]</span>
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 text-terminal-green-dim absolute left-3.5 top-3" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="analyst@cyberintel.gov"
-                  className="w-full bg-slate-900/80 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="w-full bg-[#050705] border border-terminal-border rounded-lg py-2.5 pl-10 pr-4 text-xs font-mono text-terminal-green placeholder-terminal-muted focus:outline-none focus:border-terminal-green focus:ring-1 focus:ring-terminal-green transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-2">
-                Security Password
+              <label className="block text-[11px] font-mono text-terminal-green-dim uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>user@ctip-sec:~$ input_passphrase</span>
+                <span className="text-[10px] text-terminal-muted">[ENCRYPTED]</span>
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-terminal-green-dim absolute left-3.5 top-3" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full bg-slate-900/80 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="w-full bg-[#050705] border border-terminal-border rounded-lg py-2.5 pl-10 pr-4 text-xs font-mono text-terminal-green placeholder-terminal-muted focus:outline-none focus:border-terminal-green focus:ring-1 focus:ring-terminal-green transition-all"
                 />
               </div>
             </div>
@@ -110,48 +119,52 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={submitting || isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-terminal-green-dark hover:bg-terminal-border text-terminal-green hover:text-terminal-bright font-bold py-2.5 px-4 rounded-lg text-xs uppercase tracking-wider font-mono transition-all duration-200 border border-terminal-border hover:border-terminal-green flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-terminal-green-dark/30"
             >
               {submitting || isLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-terminal-green border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Sign In to Terminal</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  <span>AUTHENTICATE SESSION</span>
+                  <span className="font-mono text-terminal-green group-hover:translate-x-1 transition-transform">█</span>
                 </>
               )}
             </button>
           </form>
 
-          {/* Quick Local Dev Seeds Info */}
-          <div className="mt-8 pt-6 border-t border-slate-800/80 text-xs text-slate-400">
-            <p className="font-semibold text-slate-400 mb-2 flex items-center gap-1.5">
-              <Server className="w-3.5 h-3.5 text-blue-400" />
-              Local Development Demo Accounts:
+          {/* Quick Demo Seed Accounts */}
+          <div className="pt-4 border-t border-terminal-border text-xs">
+            <p className="font-mono text-[11px] text-terminal-green-dim mb-2 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Server className="w-3.5 h-3.5 text-terminal-green" />
+                Demo Accounts:
+              </span>
+              <span className="text-[9px] text-terminal-muted">[SEED_STORE]</span>
             </p>
-            <div className="bg-slate-900/60 rounded-lg p-3 font-mono text-[10px] space-y-1.5 text-slate-300 border border-slate-800">
-              <div className="flex justify-between">
-                <span>admin@cyberintel.gov</span>
-                <span className="text-purple-400 font-bold">ADMIN</span>
+            <div className="bg-[#050705] rounded-lg p-3 font-mono text-[10px] space-y-1.5 text-terminal-green-dim border border-terminal-border">
+              <div className="flex justify-between items-center">
+                <span className="text-terminal-green">admin@cyberintel.gov</span>
+                <span className="px-1.5 py-0.5 rounded bg-purple-950/80 text-purple-400 border border-purple-500/40 font-bold">ADMIN</span>
               </div>
-              <div className="flex justify-between">
-                <span>analyst@cyberintel.gov</span>
-                <span className="text-blue-400 font-bold">ANALYST</span>
+              <div className="flex justify-between items-center">
+                <span className="text-terminal-green">analyst@cyberintel.gov</span>
+                <span className="px-1.5 py-0.5 rounded bg-terminal-green-dark text-terminal-green border border-terminal-border font-bold">SOC_ANALYST</span>
               </div>
-              <div className="flex justify-between">
-                <span>readonly@cyberintel.gov</span>
-                <span className="text-emerald-400 font-bold">READ_ONLY</span>
+              <div className="flex justify-between items-center">
+                <span className="text-terminal-green">readonly@cyberintel.gov</span>
+                <span className="px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-700 font-bold">READ_ONLY</span>
               </div>
-              <p className="text-[9px] text-slate-500 pt-1 border-t border-slate-800/80">
-                Passwords: AdminSecurePass123! | AnalystPass123! | ReadOnlyPass123!
+              <p className="text-[9px] text-terminal-muted pt-1.5 border-t border-terminal-border">
+                Passphrases: AdminSecurePass123! | AnalystPass123! | ReadOnlyPass123!
               </p>
             </div>
           </div>
         </div>
 
         {/* Footer info */}
-        <p className="text-center text-xs text-slate-400 mt-6 font-mono">
-          Restricted Government & SOC System • Authorized Access Only
+        <p className="text-center text-[10px] text-terminal-green-dim mt-4 font-mono flex items-center justify-center gap-1">
+          <Activity className="w-3 h-3 text-terminal-green" />
+          <span>CLASSIFIED SYSTEM • PROMPT: root@ctip-sec-01:~#</span>
         </p>
       </div>
     </div>

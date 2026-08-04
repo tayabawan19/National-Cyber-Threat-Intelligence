@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Globe, ShieldAlert, MapPin, Info, RefreshCw, XCircle, ExternalLink, Database, AlertTriangle, Layers } from 'lucide-react';
+import { Globe, ShieldAlert, MapPin, Info, RefreshCw, XCircle, ExternalLink, Database, AlertTriangle, Layers, Activity } from 'lucide-react';
 
 interface ThreatMarker {
   id: string;
@@ -52,7 +52,7 @@ export const AttackMapView: React.FC<{ token: string }> = ({ token }) => {
 
   const clusterMarkersList = (markerItems: ThreatMarker[]): MarkerCluster[] => {
     const result: MarkerCluster[] = [];
-    const threshold = 6.0; // 6% distance threshold for clustering
+    const threshold = 6.0;
 
     markerItems.forEach((m) => {
       const { x, y } = convertCoordsToSvg(m.lat, m.lng);
@@ -129,54 +129,57 @@ export const AttackMapView: React.FC<{ token: string }> = ({ token }) => {
   const getMarkerColor = (severity: string) => {
     switch (severity) {
       case 'CRITICAL':
-        return 'bg-red-500 shadow-red-500/50';
+        return 'bg-red-500 shadow-red-500/50 glow-red';
       case 'HIGH':
-        return 'bg-amber-500 shadow-amber-500/50';
+        return 'bg-orange-500 shadow-orange-500/50 glow-orange';
+      case 'MEDIUM':
+        return 'bg-yellow-400 shadow-yellow-400/50';
       default:
-        return 'bg-blue-500 shadow-blue-500/50';
+        return 'bg-terminal-green shadow-terminal-green/50 glow-green';
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-mono text-terminal-green">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/70 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 soc-card p-5 rounded-xl border border-terminal-border bg-[#0a0f0a]/90">
         <div>
-          <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-blue-400" />
-            <span>Global Attack Vector & Spatial Geolocation Map</span>
+          <h2 className="text-sm font-bold font-mono text-terminal-green flex items-center gap-2 text-glow-green">
+            <Globe className="w-5 h-5 text-terminal-green" />
+            <span>GLOBAL ATTACK VECTOR & SPATIAL GEOLOCATION GRID</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-terminal-green-dim mt-0.5 font-mono">
             Real-time geolocated threat markers with spatial regional clustering to eliminate marker overlap.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/20">
-            ● Active Ingestion Stream
+        <div className="flex items-center gap-2 font-mono">
+          <span className="text-[10px] font-mono font-bold text-terminal-green bg-terminal-green-dark px-3 py-1 rounded border border-terminal-border flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-terminal-green animate-pulse" />
+            SPATIAL STREAM ACTIVE
           </span>
         </div>
       </div>
 
       {/* World Map Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3 bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-2xl relative min-h-[440px] overflow-hidden flex flex-col justify-between">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 font-mono">
+        <div className="lg:col-span-3 soc-card p-6 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 shadow-2xl relative min-h-[440px] overflow-hidden flex flex-col justify-between">
           {/* Map Title Overlay */}
-          <div className="relative z-10 flex items-center justify-between">
-            <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-              <Layers className="w-4 h-4 text-blue-400" />
+          <div className="relative z-10 flex items-center justify-between font-mono">
+            <span className="text-xs font-mono font-bold text-terminal-green uppercase tracking-wider flex items-center gap-2">
+              <Layers className="w-4 h-4 text-terminal-green" />
               <span>SPATIAL CLUSTERED GEOLOCATION GRID</span>
             </span>
-            <span className="text-[10px] font-mono text-slate-500">
-              Total Threat Indicators: {markers.length} | Active Clusters: {clusters.length}
+            <span className="text-[10px] font-mono text-terminal-green-dim">
+              Indicators: <span className="text-terminal-green font-bold">{markers.length}</span> | Clusters: <span className="text-terminal-green font-bold">{clusters.length}</span>
             </span>
           </div>
 
           {/* Interactive Threat Markers Grid */}
-          <div className="relative z-10 w-full h-[340px] my-4 border border-slate-800/60 rounded-xl bg-slate-950/60 overflow-hidden">
-            {/* World Map Background Paths */}
-            <div className="absolute inset-0 opacity-20 pointer-events-none flex items-center justify-center p-8">
-              <svg viewBox="0 0 1000 500" className="w-full h-full stroke-slate-700 fill-slate-800/40">
+          <div className="relative z-10 w-full h-[340px] my-4 border border-terminal-border rounded-lg bg-[#050705] bg-terminal-grid overflow-hidden">
+            {/* World Map Background SVG Paths */}
+            <div className="absolute inset-0 opacity-30 pointer-events-none flex items-center justify-center p-8">
+              <svg viewBox="0 0 1000 500" className="w-full h-full stroke-terminal-border fill-terminal-green-dark/40">
                 <path d="M150,150 Q200,100 250,160 T350,180 T250,280 T150,220 Z" />
                 <path d="M280,320 Q320,300 350,380 T320,480 T260,380 Z" />
                 <path d="M480,120 Q550,80 620,130 T600,240 T480,200 Z" />
@@ -186,11 +189,11 @@ export const AttackMapView: React.FC<{ token: string }> = ({ token }) => {
             </div>
 
             {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80 z-20 text-slate-400 font-mono text-xs">
+              <div className="absolute inset-0 flex items-center justify-center bg-[#050705]/90 z-20 text-terminal-muted font-mono text-xs">
                 Loading attack map markers...
               </div>
             ) : clusters.length === 0 ? (
-              <div className="absolute inset-0 flex items-center justify-center text-slate-500 font-mono text-xs">
+              <div className="absolute inset-0 flex items-center justify-center text-terminal-muted font-mono text-xs">
                 No geolocated threat markers found.
               </div>
             ) : (
@@ -206,29 +209,29 @@ export const AttackMapView: React.FC<{ token: string }> = ({ token }) => {
                       setSelectedCluster(cluster);
                       setSelectedMarker(cluster.markers[0]);
                     }}
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10"
+                    className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10 font-mono"
                   >
                     {/* Radar Pulse Animation */}
-                    <span className={`absolute inline-flex ${isMulti ? 'h-8 w-8' : 'h-6 w-6'} rounded-full opacity-75 animate-ping ${cluster.maxSeverity === 'CRITICAL' ? 'bg-red-500' : 'bg-amber-500'}`}></span>
+                    <span className={`absolute inline-flex ${isMulti ? 'h-8 w-8' : 'h-6 w-6'} rounded-full opacity-75 animate-ping ${cluster.maxSeverity === 'CRITICAL' ? 'bg-red-500' : 'bg-orange-500'}`}></span>
 
                     {/* Cluster Badge / Single Dot */}
                     {isMulti ? (
-                      <span className={`relative inline-flex items-center justify-center rounded-full h-7 w-7 border-2 border-slate-950 font-mono font-bold text-[10px] text-white shadow-xl ${getMarkerColor(cluster.maxSeverity)} ${isSelected ? 'ring-4 ring-blue-500/50 scale-125' : ''}`}>
+                      <span className={`relative inline-flex items-center justify-center rounded-full h-7 w-7 border-2 border-black font-mono font-bold text-[10px] text-black shadow-xl ${getMarkerColor(cluster.maxSeverity)} ${isSelected ? 'ring-4 ring-terminal-green/60 scale-125' : ''}`}>
                         {cluster.markers.length}
                       </span>
                     ) : (
                       <span
-                        className={`relative inline-flex rounded-full h-3.5 w-3.5 border-2 border-slate-950 shadow-lg ${getMarkerColor(
+                        className={`relative inline-flex rounded-full h-3.5 w-3.5 border-2 border-black shadow-lg ${getMarkerColor(
                           cluster.maxSeverity,
-                        )} ${isSelected ? 'ring-4 ring-blue-500/50 scale-125' : ''}`}
+                        )} ${isSelected ? 'ring-4 ring-terminal-green/60 scale-125' : ''}`}
                       ></span>
                     )}
 
                     {/* Tooltip */}
-                    <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-44 p-2.5 rounded-xl bg-slate-900/95 text-slate-100 text-[10px] font-mono border border-slate-700 shadow-2xl z-30 pointer-events-none">
-                      <p className="font-bold text-blue-400">{isMulti ? `${cluster.markers.length} Cluster IOCs` : cluster.markers[0].ip}</p>
-                      <p className="text-slate-300">{cluster.markers[0].city}, {cluster.markers[0].country}</p>
-                      <p className="text-slate-500">Source: {cluster.markers[0].source}</p>
+                    <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-44 p-2.5 rounded bg-[#050705] text-terminal-green text-[10px] font-mono border border-terminal-border shadow-2xl z-30 pointer-events-none">
+                      <p className="font-bold text-terminal-green">{isMulti ? `${cluster.markers.length} Cluster IOCs` : cluster.markers[0].ip}</p>
+                      <p className="text-terminal-green-dim">{cluster.markers[0].city}, {cluster.markers[0].country}</p>
+                      <p className="text-terminal-muted">Source: {cluster.markers[0].source}</p>
                     </div>
                   </div>
                 );
@@ -237,42 +240,42 @@ export const AttackMapView: React.FC<{ token: string }> = ({ token }) => {
           </div>
 
           {/* Map Footer Legend */}
-          <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-slate-400">
+          <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-terminal-green-dim">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span> Critical Threat
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 glow-red"></span> Critical Threat
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> High Risk
+                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 glow-orange"></span> High Risk
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold text-[9px] flex items-center justify-center">#</span> Regional Cluster
+                <span className="w-5 h-5 rounded-full bg-terminal-green text-black font-bold text-[9px] flex items-center justify-center">#</span> Regional Cluster
               </span>
             </div>
-            <span>Click marker or cluster for breakdown</span>
+            <span>Click marker or cluster for details</span>
           </div>
         </div>
 
         {/* Selected Marker & Cluster Details Sidebar */}
-        <div className="bg-slate-900/70 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-          <h3 className="text-xs font-mono font-bold text-slate-400 uppercase pb-2 border-b border-slate-800">
+        <div className="soc-card p-5 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 space-y-4 font-mono">
+          <h3 className="text-xs font-mono font-bold text-terminal-green uppercase pb-2 border-b border-terminal-border text-glow-green">
             Threat Marker Inspector
           </h3>
 
           {selectedCluster && selectedCluster.markers.length > 1 && (
-            <div className="space-y-2 pb-3 border-b border-slate-800">
-              <span className="text-[10px] font-mono text-blue-400 font-bold uppercase block">
+            <div className="space-y-2 pb-3 border-b border-terminal-border font-mono">
+              <span className="text-[10px] font-mono text-terminal-green font-bold uppercase block">
                 Cluster Members ({selectedCluster.markers.length})
               </span>
-              <div className="space-y-1 max-h-36 overflow-y-auto">
+              <div className="space-y-1 max-h-36 overflow-y-auto font-mono">
                 {selectedCluster.markers.map((m) => (
                   <div
                     key={m.id}
                     onClick={() => setSelectedMarker(m)}
-                    className={`p-2 rounded-lg cursor-pointer text-xs font-mono flex items-center justify-between transition ${selectedMarker?.id === m.id ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40' : 'bg-slate-800/40 text-slate-300 hover:bg-slate-800'}`}
+                    className={`p-2 rounded cursor-pointer text-xs font-mono flex items-center justify-between transition ${selectedMarker?.id === m.id ? 'bg-terminal-green-dark text-terminal-green border border-terminal-border' : 'bg-[#050705] text-terminal-green-dim hover:bg-terminal-surface'}`}
                   >
                     <span>{m.ip}</span>
-                    <span className="text-[9px] text-slate-500">{m.country}</span>
+                    <span className="text-[9px] text-terminal-muted">{m.country}</span>
                   </div>
                 ))}
               </div>
@@ -280,40 +283,40 @@ export const AttackMapView: React.FC<{ token: string }> = ({ token }) => {
           )}
 
           {selectedMarker ? (
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-800/60 border border-slate-700 font-mono space-y-1">
-                <span className="text-[10px] text-slate-500 uppercase font-bold">IP Indicator</span>
-                <p className="text-sm font-bold text-blue-400">{selectedMarker.ip}</p>
+            <div className="space-y-3 text-xs font-mono">
+              <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border space-y-1 font-mono">
+                <span className="text-[10px] text-terminal-green-dim uppercase font-bold">IP Indicator</span>
+                <p className="text-sm font-bold text-terminal-green text-glow-green">{selectedMarker.ip}</p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800 space-y-1 font-mono">
-                <span className="text-[10px] text-slate-500 uppercase">Geolocation</span>
-                <p className="font-semibold text-slate-200">{selectedMarker.city}, {selectedMarker.country}</p>
-                <p className="text-[10px] text-slate-500">Lat: {selectedMarker.lat} | Lng: {selectedMarker.lng}</p>
+              <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border space-y-1 font-mono">
+                <span className="text-[10px] text-terminal-green-dim uppercase">Geolocation</span>
+                <p className="font-semibold text-terminal-green">{selectedMarker.city}, {selectedMarker.country}</p>
+                <p className="text-[10px] text-terminal-muted">Lat: {selectedMarker.lat} | Lng: {selectedMarker.lng}</p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800 space-y-1 font-mono">
-                <span className="text-[10px] text-slate-500 uppercase">Collector Source</span>
-                <p className="font-semibold text-slate-300">{selectedMarker.source}</p>
+              <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border space-y-1 font-mono">
+                <span className="text-[10px] text-terminal-green-dim uppercase">Collector Source</span>
+                <p className="font-semibold text-terminal-green-dim">{selectedMarker.source}</p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800 space-y-1 font-mono">
-                <span className="text-[10px] text-slate-500 uppercase">Severity Rating</span>
-                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${selectedMarker.severity === 'CRITICAL' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+              <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border space-y-1 font-mono">
+                <span className="text-[10px] text-terminal-green-dim uppercase">Severity Rating</span>
+                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${selectedMarker.severity === 'CRITICAL' ? 'bg-red-950/80 text-red-400 border border-red-500/40' : 'bg-orange-950/80 text-orange-400 border border-orange-500/40'}`}>
                   {selectedMarker.severity}
                 </span>
               </div>
 
               <button
                 onClick={() => setShowIocModal(true)}
-                className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 font-mono"
+                className="w-full py-2.5 rounded-lg bg-terminal-green-dark hover:bg-terminal-border text-terminal-green font-bold text-xs transition border border-terminal-border flex items-center justify-center gap-2 font-mono"
               >
-                <ExternalLink className="w-4 h-4" />
-                <span>View Full IOC & Alert Details</span>
+                <ExternalLink className="w-4 h-4 text-terminal-green" />
+                <span>INSPECT FULL RECORD</span>
               </button>
             </div>
           ) : (
-            <div className="text-center py-16 text-xs text-slate-500 font-mono">
+            <div className="text-center py-16 text-xs text-terminal-muted font-mono">
               Click any active threat marker on the map to inspect geolocation details.
             </div>
           )}
@@ -322,37 +325,37 @@ export const AttackMapView: React.FC<{ token: string }> = ({ token }) => {
 
       {/* Full IOC Detail Modal */}
       {showIocModal && selectedMarker && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="soc-card border border-terminal-border rounded-xl max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs bg-[#0a0f0a]">
+            <div className="flex items-center justify-between border-b border-terminal-border pb-3">
               <div className="flex items-center gap-2">
-                <Database className="w-5 h-5 text-blue-400" />
-                <h3 className="text-sm font-bold text-slate-100 uppercase">IOC Deep Analysis Record</h3>
+                <Database className="w-5 h-5 text-terminal-green" />
+                <h3 className="text-sm font-bold text-terminal-green uppercase text-glow-green">IOC Deep Analysis Record</h3>
               </div>
-              <button onClick={() => setShowIocModal(false)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setShowIocModal(false)} className="text-terminal-green-dim hover:text-terminal-green">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3">
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-[10px] text-slate-500">INDICATOR VALUE</span>
-                <p className="text-base font-bold text-blue-400">{selectedMarker.ip}</p>
-                <span className="text-[10px] text-slate-400">Type: {selectedMarker.type} • Source: {selectedMarker.source}</span>
+            <div className="space-y-3 font-mono">
+              <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border space-y-1">
+                <span className="text-[10px] text-terminal-green-dim">INDICATOR VALUE</span>
+                <p className="text-base font-bold text-terminal-green text-glow-green">{selectedMarker.ip}</p>
+                <span className="text-[10px] text-terminal-muted">Type: {selectedMarker.type} • Source: {selectedMarker.source}</span>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-[10px] text-slate-500">GEOLOCATION DATA</span>
-                <p className="text-slate-200 font-semibold">{selectedMarker.city}, {selectedMarker.country}</p>
-                <p className="text-[10px] text-slate-500">Coordinates: [{selectedMarker.lat}, {selectedMarker.lng}]</p>
+              <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border space-y-1">
+                <span className="text-[10px] text-terminal-green-dim">GEOLOCATION DATA</span>
+                <p className="text-terminal-green font-semibold">{selectedMarker.city}, {selectedMarker.country}</p>
+                <p className="text-[10px] text-terminal-muted">Coordinates: [{selectedMarker.lat}, {selectedMarker.lng}]</p>
               </div>
 
               {selectedMarker.tags && selectedMarker.tags.length > 0 && (
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-[10px] text-slate-500">INGESTION THREAT TAGS</span>
+                <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border space-y-1">
+                  <span className="text-[10px] text-terminal-green-dim">INGESTION THREAT TAGS</span>
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {selectedMarker.tags.map((t, idx) => (
-                      <span key={idx} className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px]">
+                      <span key={idx} className="px-2 py-0.5 rounded bg-terminal-green-dark text-terminal-green border border-terminal-border text-[10px]">
                         #{t}
                       </span>
                     ))}
@@ -361,19 +364,19 @@ export const AttackMapView: React.FC<{ token: string }> = ({ token }) => {
               )}
 
               {selectedMarker.rawPayload && (
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-[10px] text-slate-500">RAW FEED PAYLOAD</span>
-                  <pre className="p-2 rounded bg-slate-900 text-[10px] text-slate-300 overflow-x-auto">
+                <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border space-y-1">
+                  <span className="text-[10px] text-terminal-green-dim">RAW FEED PAYLOAD</span>
+                  <pre className="p-2 rounded bg-[#050705] text-[10px] text-terminal-green overflow-x-auto border border-terminal-border font-mono">
                     {JSON.stringify(selectedMarker.rawPayload, null, 2)}
                   </pre>
                 </div>
               )}
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 font-mono">
               <button
                 onClick={() => setShowIocModal(false)}
-                className="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition"
+                className="w-full py-2.5 rounded-lg bg-terminal-surface hover:bg-terminal-border text-terminal-green font-bold transition border border-terminal-border"
               >
                 Close Inspector
               </button>

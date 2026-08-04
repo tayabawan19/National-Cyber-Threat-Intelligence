@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Shield, AlertTriangle, Database, FileCode, ArrowUpRight, Activity, Cpu, CheckCircle2, Globe, Flame, BarChart2 } from 'lucide-react';
+import { Shield, AlertTriangle, Database, FileCode, ArrowUpRight, Activity, Cpu, CheckCircle2, Globe, Flame, BarChart2, Radio, Terminal } from 'lucide-react';
+import { CyberCellHeroBg } from './CyberCellHeroBg';
 
 interface DashboardStats {
   totalAlerts: number;
@@ -36,7 +37,7 @@ export const DashboardView: React.FC<{
         const headers = { Authorization: `Bearer ${token}` };
         const [statsRes, alertsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/dashboard/stats`, { headers }),
-          fetch(`${API_BASE_URL}/alerts?limit=5`, { headers }),
+          fetch(`${API_BASE_URL}/alerts?limit=6`, { headers }),
         ]);
 
         const statsData = await statsRes.json();
@@ -57,13 +58,13 @@ export const DashboardView: React.FC<{
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
       case 'CRITICAL':
-        return 'bg-red-500/10 text-red-400 border-red-500/20';
+        return 'bg-red-950/80 text-red-400 border-red-500/50 glow-red';
       case 'HIGH':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        return 'bg-orange-950/80 text-orange-400 border-orange-500/50 glow-orange';
       case 'MEDIUM':
-        return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+        return 'bg-yellow-950/80 text-yellow-400 border-yellow-500/50';
       default:
-        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+        return 'bg-terminal-green-dark text-terminal-green border-terminal-border';
     }
   };
 
@@ -75,121 +76,129 @@ export const DashboardView: React.FC<{
   const maxTrendCount = Math.max(...(stats?.alertVolumeTrend?.map((t) => t.count) || [1]), 1);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-mono text-terminal-green">
       {/* Top Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-slate-900/90 to-blue-950/40 p-6 rounded-2xl border border-slate-800 shadow-xl">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-xs font-mono font-semibold text-emerald-400 tracking-wider uppercase">SOC Monitor Live</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0a0f0a]/95 p-6 rounded-xl border border-terminal-border shadow-2xl relative overflow-hidden">
+        {/* Toned down Cyber Cell Hero background layer */}
+        <CyberCellHeroBg variant="header" className="opacity-75" />
+
+        <div className="relative z-10 font-mono">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="inline-block w-2 h-2 rounded-full bg-terminal-green animate-pulse"></span>
+            <span className="text-[11px] font-mono font-bold text-terminal-green tracking-widest uppercase text-glow-green">
+              ┌─[ LIVE SOC THREAT MONITOR ]
+            </span>
           </div>
-          <h2 className="text-2xl font-bold text-slate-100">National Threat Operations Center</h2>
-          <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-            Real-time correlation across AlienVault OTX, NIST NVD, and abuse.ch feeds with automated Groq AI Threat Summaries.
+          <h2 className="text-lg font-bold text-terminal-green flex items-center gap-2 text-glow-green">
+            <span>National Cyber Threat Operations Center</span>
+          </h2>
+          <p className="text-xs text-terminal-green-dim mt-1 max-w-2xl font-mono">
+            Real-time feed correlation across OTX, NVD CVE, abuse.ch & MISP platforms with automated Groq AI Threat Summaries.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-10 font-mono">
           <button
             onClick={() => onNavigateTab('map')}
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/20 flex items-center gap-2 transition"
+            className="px-4 py-2.5 rounded-lg bg-terminal-green-dark hover:bg-terminal-border text-terminal-green font-bold text-xs shadow-lg flex items-center gap-2 transition border border-terminal-border hover:border-terminal-green"
           >
-            <Activity className="w-4 h-4" />
-            <span>Launch Attack Map</span>
+            <Activity className="w-4 h-4 text-terminal-green" />
+            <span>[ LAUNCH ATTACK MAP ]</span>
           </button>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900/70 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
+        <div className="soc-card p-5 rounded-xl border border-terminal-border bg-[#0a0f0a]/90">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">Total Alerts Recorded</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
+            <span className="text-xs font-mono font-bold text-terminal-green-dim uppercase tracking-wider">Total Alerts</span>
+            <div className="p-2 rounded-lg bg-amber-950/80 border border-amber-500/40">
               <AlertTriangle className="w-4 h-4 text-amber-400" />
             </div>
           </div>
-          <p className="text-3xl font-extrabold text-slate-100 mt-2">{loading ? '...' : (stats?.totalAlerts ?? 0)}</p>
-          <span className="text-[10px] text-amber-400/80 font-mono mt-1 block">Live Postgres Database</span>
+          <p className="text-3xl font-extrabold font-mono text-terminal-green text-glow-green mt-2">{loading ? '...' : (stats?.totalAlerts ?? 0)}</p>
+          <span className="text-[10px] text-terminal-muted font-mono mt-1 block">Live Postgres Store</span>
         </div>
 
-        <div className="bg-slate-900/70 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-lg">
+        <div className="soc-card p-5 rounded-xl border border-terminal-border bg-[#0a0f0a]/90">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">Active Open Alerts</span>
-            <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/20">
+            <span className="text-xs font-mono font-bold text-terminal-green-dim uppercase tracking-wider">Active Open Alerts</span>
+            <div className="p-2 rounded-lg bg-red-950/80 border border-red-500/50 glow-red">
               <Shield className="w-4 h-4 text-red-400" />
             </div>
           </div>
-          <p className="text-3xl font-extrabold text-slate-100 mt-2">{loading ? '...' : (stats?.openAlerts ?? 0)}</p>
-          <span className="text-[10px] text-red-400/80 font-mono mt-1 block">NEW & TRIAGED Alerts</span>
+          <p className="text-3xl font-extrabold font-mono text-red-400 mt-2">{loading ? '...' : (stats?.openAlerts ?? 0)}</p>
+          <span className="text-[10px] text-red-400/90 font-mono mt-1 block">NEW & TRIAGED Alerts</span>
         </div>
 
-        <div className="bg-slate-900/70 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-lg">
+        <div className="soc-card p-5 rounded-xl border border-terminal-border bg-[#0a0f0a]/90">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">Total Ingested IOCs</span>
-            <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
-              <Database className="w-4 h-4 text-blue-400" />
+            <span className="text-xs font-mono font-bold text-terminal-green-dim uppercase tracking-wider">Ingested IOCs</span>
+            <div className="p-2 rounded-lg bg-terminal-green-dark border border-terminal-border">
+              <Database className="w-4 h-4 text-terminal-green" />
             </div>
           </div>
-          <p className="text-3xl font-extrabold text-slate-100 mt-2">{loading ? '...' : (stats?.totalIocs ?? 0)}</p>
-          <span className="text-[10px] text-blue-400/80 font-mono mt-1 block">IPs, Domains, Hashes, URLs</span>
+          <p className="text-3xl font-extrabold font-mono text-terminal-green text-glow-green mt-2">{loading ? '...' : (stats?.totalIocs ?? 0)}</p>
+          <span className="text-[10px] text-terminal-muted font-mono mt-1 block">IPs, Domains, Hashes, URLs</span>
         </div>
 
-        <div className="bg-slate-900/70 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-lg">
+        <div className="soc-card p-5 rounded-xl border border-terminal-border bg-[#0a0f0a]/90">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">CVE Vulnerabilities</span>
-            <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
+            <span className="text-xs font-mono font-bold text-terminal-green-dim uppercase tracking-wider">CVE Database</span>
+            <div className="p-2 rounded-lg bg-purple-950/80 border border-purple-500/40">
               <FileCode className="w-4 h-4 text-purple-400" />
             </div>
           </div>
-          <p className="text-3xl font-extrabold text-slate-100 mt-2">{loading ? '...' : (stats?.totalCves ?? 0)}</p>
-          <span className="text-[10px] text-purple-400/80 font-mono mt-1 block">NVD NIST Synchronized</span>
+          <p className="text-3xl font-extrabold font-mono text-purple-400 mt-2">{loading ? '...' : (stats?.totalCves ?? 0)}</p>
+          <span className="text-[10px] text-purple-400/90 font-mono mt-1 block">NVD NIST Synchronized</span>
         </div>
       </div>
 
       {/* Main Row 1: Alert Trend Volume & Severity Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono">
         {/* Left Column: Alert Volume Over Time Trend Chart */}
-        <div className="lg:col-span-2 bg-slate-900/70 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
+        <div className="lg:col-span-2 soc-card p-6 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                  <BarChart2 className="w-4 h-4 text-blue-400" />
-                  <span>Alert Volume Trend (Time Series)</span>
+                <h3 className="text-sm font-bold font-mono text-terminal-green flex items-center gap-2 text-glow-green">
+                  <BarChart2 className="w-4 h-4 text-terminal-green" />
+                  <span>ALERT GENERATION VOLUME (TIME SERIES)</span>
                 </h3>
-                <p className="text-xs text-slate-400">Real-time alert generation rate aggregated from live DB alerts</p>
+                <p className="text-xs text-terminal-green-dim mt-0.5">Real-time alert generation rate aggregated from live database alerts</p>
               </div>
-              <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                ● Live DB Stream
+              <span className="text-[10px] font-mono text-terminal-green bg-terminal-green-dark px-2.5 py-1 rounded border border-terminal-border flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-terminal-green animate-pulse" />
+                LIVE STREAM
               </span>
             </div>
 
             {loading ? (
-              <div className="h-44 flex items-center justify-center text-xs text-slate-500 font-mono">
-                Loading volume trend chart...
+              <div className="h-44 flex items-center justify-center text-xs text-terminal-muted font-mono">
+                Loading volume trend data...
               </div>
             ) : !stats?.alertVolumeTrend || stats.alertVolumeTrend.length === 0 ? (
-              <div className="h-44 flex items-center justify-center text-xs text-slate-500 font-mono">
+              <div className="h-44 flex items-center justify-center text-xs text-terminal-muted font-mono">
                 No alert trend data recorded yet.
               </div>
             ) : (
-              <div className="space-y-4 my-4">
-                <div className="h-40 flex items-end justify-between gap-2 pt-4 px-2 bg-slate-950/40 rounded-xl border border-slate-800/80">
+              <div className="space-y-4 my-4 font-mono">
+                <div className="h-40 flex items-end justify-between gap-2 pt-4 px-3 bg-[#050705] rounded-lg border border-terminal-border">
                   {stats.alertVolumeTrend.map((item, idx) => {
                     const heightPercent = Math.max(8, Math.round((item.count / maxTrendCount) * 100));
                     return (
-                      <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative">
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative font-mono">
                         {/* Hover Tooltip */}
-                        <div className="hidden group-hover:block absolute bottom-full mb-1 px-2 py-1 bg-slate-800 text-slate-100 text-[10px] font-mono rounded border border-slate-700 whitespace-nowrap z-20 shadow-xl">
-                          {item.date}: <span className="text-blue-400 font-bold">{item.count} alerts</span>
+                        <div className="hidden group-hover:block absolute bottom-full mb-1.5 px-2.5 py-1 bg-[#050705] text-terminal-green text-[10px] font-mono rounded border border-terminal-green whitespace-nowrap z-20 shadow-2xl">
+                          {item.date}: <span className="text-terminal-green font-bold">{item.count} alerts</span>
                         </div>
-                        <span className="text-[9px] font-mono text-slate-400 font-bold">{item.count}</span>
+                        <span className="text-[9px] font-mono text-terminal-green font-bold">{item.count}</span>
                         <div
                           style={{ height: `${heightPercent}%` }}
-                          className="w-full max-w-[36px] bg-gradient-to-t from-blue-600 via-blue-500 to-cyan-400 rounded-t-md transition-all duration-300 group-hover:from-blue-500 group-hover:to-cyan-300"
+                          className="w-full max-w-[32px] bg-gradient-to-t from-[#112615] via-[#22552a] to-[#33ff66] rounded-t transition-all duration-300 group-hover:glow-green"
                         ></div>
-                        <span className="text-[9px] font-mono text-slate-500 truncate max-w-full">
+                        <span className="text-[9px] font-mono text-terminal-green-dim truncate max-w-full">
                           {item.date.slice(5)}
                         </span>
                       </div>
@@ -200,40 +209,42 @@ export const DashboardView: React.FC<{
             )}
           </div>
 
-          <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-            <span className="flex items-center gap-1.5 font-mono">
-              <Cpu className="w-3.5 h-3.5 text-blue-400" />
-              <span>Groq AI Copilot Active (`llama-3.3-70b-versatile`)</span>
+          <div className="pt-4 border-t border-terminal-border flex items-center justify-between text-xs text-terminal-green-dim font-mono">
+            <span className="flex items-center gap-1.5">
+              <Cpu className="w-3.5 h-3.5 text-terminal-green" />
+              <span>Groq AI Advisory (`llama-3.3-70b-versatile`)</span>
             </span>
             <button
               onClick={() => onNavigateTab('alerts')}
-              className="text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1"
+              className="text-terminal-green hover:text-terminal-bright font-bold flex items-center gap-1"
             >
-              <span>View Alerts Stream</span>
+              <span>View Alert Stream</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* Right Column: Severity Breakdown from Real DB */}
-        <div className="bg-slate-900/70 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+        {/* Right Column: Severity Breakdown */}
+        <div className="soc-card p-6 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 space-y-4 font-mono">
           <div>
-            <h3 className="text-sm font-bold text-slate-200">Threat Severity Distribution</h3>
-            <p className="text-xs text-slate-400">Live breakdown calculated from database alerts</p>
+            <h3 className="text-sm font-bold font-mono text-terminal-green text-glow-green">THREAT SEVERITY BREAKDOWN</h3>
+            <p className="text-xs text-terminal-green-dim mt-0.5">Live distribution calculated from database alerts</p>
           </div>
 
           {loading ? (
-            <div className="py-12 text-center text-xs text-slate-500 font-mono">Loading severity breakdown...</div>
+            <div className="py-12 text-center text-xs text-terminal-muted font-mono">Loading severity breakdown...</div>
           ) : (
             <div className="space-y-4 my-2 font-mono text-xs">
               <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-red-400 font-bold">CRITICAL THREATS</span>
-                  <span className="text-slate-300 font-bold">
+                <div className="flex justify-between mb-1.5 font-mono">
+                  <span className="text-red-400 font-bold flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-red-500" /> CRITICAL
+                  </span>
+                  <span className="text-red-400 font-bold">
                     {stats?.severityDistribution?.CRITICAL ?? 0} ({calculatePercentage(stats?.severityDistribution?.CRITICAL ?? 0, stats?.totalAlerts ?? 0)}%)
                   </span>
                 </div>
-                <div className="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2.5 w-full bg-[#050705] rounded-full overflow-hidden border border-terminal-border">
                   <div
                     style={{ width: `${calculatePercentage(stats?.severityDistribution?.CRITICAL ?? 0, stats?.totalAlerts ?? 0)}%` }}
                     className="h-full bg-red-500 rounded-full"
@@ -242,46 +253,52 @@ export const DashboardView: React.FC<{
               </div>
 
               <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-amber-400 font-bold">HIGH SEVERITY</span>
-                  <span className="text-slate-300 font-bold">
+                <div className="flex justify-between mb-1.5 font-mono">
+                  <span className="text-orange-400 font-bold flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-orange-500" /> HIGH
+                  </span>
+                  <span className="text-orange-400 font-bold">
                     {stats?.severityDistribution?.HIGH ?? 0} ({calculatePercentage(stats?.severityDistribution?.HIGH ?? 0, stats?.totalAlerts ?? 0)}%)
                   </span>
                 </div>
-                <div className="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2.5 w-full bg-[#050705] rounded-full overflow-hidden border border-terminal-border">
                   <div
                     style={{ width: `${calculatePercentage(stats?.severityDistribution?.HIGH ?? 0, stats?.totalAlerts ?? 0)}%` }}
-                    className="h-full bg-amber-500 rounded-full"
+                    className="h-full bg-orange-500 rounded-full"
                   ></div>
                 </div>
               </div>
 
               <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-yellow-400 font-bold">MEDIUM SEVERITY</span>
-                  <span className="text-slate-300 font-bold">
+                <div className="flex justify-between mb-1.5 font-mono">
+                  <span className="text-yellow-400 font-bold flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-yellow-400" /> MEDIUM
+                  </span>
+                  <span className="text-yellow-400 font-bold">
                     {stats?.severityDistribution?.MEDIUM ?? 0} ({calculatePercentage(stats?.severityDistribution?.MEDIUM ?? 0, stats?.totalAlerts ?? 0)}%)
                   </span>
                 </div>
-                <div className="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2.5 w-full bg-[#050705] rounded-full overflow-hidden border border-terminal-border">
                   <div
                     style={{ width: `${calculatePercentage(stats?.severityDistribution?.MEDIUM ?? 0, stats?.totalAlerts ?? 0)}%` }}
-                    className="h-full bg-yellow-500 rounded-full"
+                    className="h-full bg-yellow-400 rounded-full"
                   ></div>
                 </div>
               </div>
 
               <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-blue-400 font-bold">LOW SEVERITY</span>
-                  <span className="text-slate-300 font-bold">
+                <div className="flex justify-between mb-1.5 font-mono">
+                  <span className="text-terminal-green font-bold flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-terminal-green" /> LOW
+                  </span>
+                  <span className="text-terminal-green font-bold">
                     {stats?.severityDistribution?.LOW ?? 0} ({calculatePercentage(stats?.severityDistribution?.LOW ?? 0, stats?.totalAlerts ?? 0)}%)
                   </span>
                 </div>
-                <div className="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2.5 w-full bg-[#050705] rounded-full overflow-hidden border border-terminal-border">
                   <div
                     style={{ width: `${calculatePercentage(stats?.severityDistribution?.LOW ?? 0, stats?.totalAlerts ?? 0)}%` }}
-                    className="h-full bg-blue-500 rounded-full"
+                    className="h-full bg-terminal-green rounded-full"
                   ></div>
                 </div>
               </div>
@@ -291,25 +308,25 @@ export const DashboardView: React.FC<{
       </div>
 
       {/* Main Row 2: Top Countries, Top Sources, & Detection Rules Performance */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono">
         {/* Widget 1: Top Targeted Countries */}
-        <div className="bg-slate-900/70 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-xl space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <h3 className="text-xs font-mono font-bold text-slate-300 uppercase flex items-center gap-1.5">
-              <Globe className="w-4 h-4 text-blue-400" />
-              <span>Top Targeted Countries</span>
+        <div className="soc-card p-5 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 space-y-3">
+          <div className="flex items-center justify-between border-b border-terminal-border pb-2.5">
+            <h3 className="text-xs font-mono font-bold text-terminal-green uppercase flex items-center gap-1.5">
+              <Globe className="w-4 h-4 text-terminal-green" />
+              <span>Targeted Geo Vectors</span>
             </h3>
           </div>
           {loading ? (
-            <div className="py-6 text-center text-xs text-slate-500 font-mono">Loading country stats...</div>
+            <div className="py-6 text-center text-xs text-terminal-muted font-mono">Loading country stats...</div>
           ) : !stats?.topTargetedCountries || stats.topTargetedCountries.length === 0 ? (
-            <div className="py-6 text-center text-xs text-slate-500 font-mono">No geolocated country data available yet.</div>
+            <div className="py-6 text-center text-xs text-terminal-muted font-mono">No geolocated country data available yet.</div>
           ) : (
             <div className="space-y-2 font-mono text-xs">
               {stats.topTargetedCountries.map((c, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-800">
-                  <span className="text-slate-200 font-semibold">{c.country}</span>
-                  <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold text-[10px]">
+                <div key={idx} className="flex items-center justify-between p-2 rounded bg-[#050705] border border-terminal-border">
+                  <span className="text-terminal-green font-semibold">{c.country}</span>
+                  <span className="px-2 py-0.5 rounded bg-terminal-green-dark text-terminal-green border border-terminal-border font-bold text-[10px]">
                     {c.count} IOCs
                   </span>
                 </div>
@@ -319,23 +336,23 @@ export const DashboardView: React.FC<{
         </div>
 
         {/* Widget 2: Top Threat Feed Sources */}
-        <div className="bg-slate-900/70 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-xl space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <h3 className="text-xs font-mono font-bold text-slate-300 uppercase flex items-center gap-1.5">
+        <div className="soc-card p-5 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 space-y-3">
+          <div className="flex items-center justify-between border-b border-terminal-border pb-2.5">
+            <h3 className="text-xs font-mono font-bold text-purple-400 uppercase flex items-center gap-1.5">
               <Database className="w-4 h-4 text-purple-400" />
-              <span>Top IOC Sources</span>
+              <span>Active Intelligence Feeds</span>
             </h3>
           </div>
           {loading ? (
-            <div className="py-6 text-center text-xs text-slate-500 font-mono">Loading source stats...</div>
+            <div className="py-6 text-center text-xs text-terminal-muted font-mono">Loading feed stats...</div>
           ) : !stats?.topIocSources || stats.topIocSources.length === 0 ? (
-            <div className="py-6 text-center text-xs text-slate-500 font-mono">No IOC source data indexed yet.</div>
+            <div className="py-6 text-center text-xs text-terminal-muted font-mono">No IOC feed data indexed yet.</div>
           ) : (
             <div className="space-y-2 font-mono text-xs">
               {stats.topIocSources.map((s, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-800">
-                  <span className="text-slate-200 font-semibold">{s.source}</span>
-                  <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold text-[10px]">
+                <div key={idx} className="flex items-center justify-between p-2 rounded bg-[#050705] border border-terminal-border">
+                  <span className="text-terminal-green font-semibold">{s.source}</span>
+                  <span className="px-2 py-0.5 rounded bg-purple-950/80 text-purple-400 border border-purple-500/40 font-bold text-[10px]">
                     {s.count} Records
                   </span>
                 </div>
@@ -345,32 +362,32 @@ export const DashboardView: React.FC<{
         </div>
 
         {/* Widget 3: Detection Rule Performance */}
-        <div className="bg-slate-900/70 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-xl space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <h3 className="text-xs font-mono font-bold text-slate-300 uppercase flex items-center gap-1.5">
-              <Flame className="w-4 h-4 text-amber-400" />
+        <div className="soc-card p-5 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 space-y-3">
+          <div className="flex items-center justify-between border-b border-terminal-border pb-2.5">
+            <h3 className="text-xs font-mono font-bold text-orange-400 uppercase flex items-center gap-1.5">
+              <Flame className="w-4 h-4 text-orange-400" />
               <span>Rule Performance (Fires)</span>
             </h3>
             <button
               onClick={() => onNavigateTab('rules')}
-              className="text-[10px] text-blue-400 hover:text-blue-300 font-mono"
+              className="text-[10px] text-terminal-green hover:text-terminal-bright font-mono font-bold"
             >
               Manage
             </button>
           </div>
           {loading ? (
-            <div className="py-6 text-center text-xs text-slate-500 font-mono">Loading rule performance...</div>
+            <div className="py-6 text-center text-xs text-terminal-muted font-mono">Loading rule stats...</div>
           ) : !stats?.rulePerformance || stats.rulePerformance.length === 0 ? (
-            <div className="py-6 text-center text-xs text-slate-500 font-mono">No detection rules created yet.</div>
+            <div className="py-6 text-center text-xs text-terminal-muted font-mono">No detection rules created yet.</div>
           ) : (
             <div className="space-y-2 font-mono text-xs">
               {stats.rulePerformance.map((r) => (
-                <div key={r.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-800">
-                  <div className="truncate max-w-[170px]">
-                    <span className="text-slate-200 font-semibold block truncate">{r.name}</span>
-                    <span className="text-[9px] text-slate-500 uppercase">{r.severity}</span>
+                <div key={r.id} className="flex items-center justify-between p-2 rounded bg-[#050705] border border-terminal-border">
+                  <div className="truncate max-w-[160px]">
+                    <span className="text-terminal-green font-semibold block truncate">{r.name}</span>
+                    <span className="text-[9px] text-terminal-green-dim uppercase">{r.severity}</span>
                   </div>
-                  <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold text-[10px]">
+                  <span className="px-2 py-0.5 rounded bg-orange-950/80 text-orange-400 border border-orange-500/40 font-bold text-[10px]">
                     {r.alertCount} Fired
                   </span>
                 </div>
@@ -381,46 +398,49 @@ export const DashboardView: React.FC<{
       </div>
 
       {/* Main Row 3: Recent Alert Stream */}
-      <div className="bg-slate-900/70 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-200">Recent Security Alerts Stream</h3>
+      <div className="soc-card p-6 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 space-y-4 font-mono">
+        <div className="flex items-center justify-between border-b border-terminal-border pb-3">
+          <h3 className="text-sm font-bold font-mono text-terminal-green flex items-center gap-2 text-glow-green">
+            <Radio className="w-4 h-4 text-terminal-green" />
+            <span>RECENT SECURITY ALERT TELEMETRY STREAM</span>
+          </h3>
           <button
             onClick={() => onNavigateTab('alerts')}
-            className="text-xs text-blue-400 hover:text-blue-300 font-mono font-medium"
+            className="text-xs text-terminal-green hover:text-terminal-bright font-mono font-bold"
           >
-            View All Stream
+            View Stream →
           </button>
         </div>
 
         {loading ? (
-          <div className="text-center py-8 text-xs text-slate-500 font-mono">Loading alerts stream...</div>
+          <div className="text-center py-8 text-xs text-terminal-muted font-mono">Loading telemetry stream...</div>
         ) : recentAlerts.length === 0 ? (
-          <div className="text-center py-8 text-xs text-slate-500 font-mono">
+          <div className="text-center py-8 text-xs text-terminal-muted font-mono">
             No alerts generated yet. Trigger a threat feed sync to ingest data!
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 font-mono">
             {recentAlerts.map((alert) => (
               <div
                 key={alert.id}
                 onClick={() => onSelectAlert(alert.id)}
-                className="p-4 rounded-xl bg-slate-800/40 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 cursor-pointer transition space-y-2"
+                className="p-4 rounded-lg bg-[#050705] hover:bg-terminal-surface border border-terminal-border hover:border-terminal-green cursor-pointer transition space-y-2.5"
               >
                 <div className="flex items-center justify-between text-[10px] font-mono">
-                  <span className={`px-2 py-0.5 rounded border font-semibold ${getSeverityBadge(alert.severity)}`}>
+                  <span className={`px-2 py-0.5 rounded border font-bold ${getSeverityBadge(alert.severity)}`}>
                     {alert.severity}
                   </span>
-                  <span className="text-slate-400">{new Date(alert.createdAt).toLocaleTimeString()}</span>
+                  <span className="text-terminal-green-dim">{new Date(alert.createdAt).toLocaleTimeString()}</span>
                 </div>
 
-                <p className="text-xs font-semibold text-slate-200 line-clamp-2">{alert.description}</p>
+                <p className="text-xs font-semibold text-terminal-green line-clamp-2">{alert.description}</p>
 
-                <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1 border-t border-slate-800/60">
+                <div className="flex items-center justify-between text-[10px] text-terminal-green-dim font-mono pt-1.5 border-t border-terminal-border">
                   <span>Source: {alert.source}</span>
                   {alert.llmExplanation && (
-                    <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                      <span>AI Copilot Summary</span>
+                    <span className="text-terminal-green font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-terminal-green" />
+                      <span>AI Copilot</span>
                     </span>
                   )}
                 </div>

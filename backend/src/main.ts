@@ -7,10 +7,16 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS for frontend client
+  // Configurable CORS restriction for production security
+  const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
+
   app.enableCors({
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
 
   // Global prefix for all API endpoints
@@ -31,14 +37,20 @@ async function bootstrap() {
   // Swagger / OpenAPI Setup
   const config = new DocumentBuilder()
     .setTitle('National Cyber Threat Intelligence Platform API')
-    .setDescription('Phase 1 Foundation REST API for SOC Analysts, Threat Detection & Incident Response.')
+    .setDescription('Enterprise Cyber Threat Intelligence, Incident Response & Threat Hunting REST API.')
     .setVersion('1.0.0')
     .addBearerAuth()
     .addTag('Auth', 'Authentication, JWT issuance, and session status')
     .addTag('Users', 'User management and role administration')
     .addTag('Cases', 'Security incident case management')
-    .addTag('Alerts', 'Security alert triage and case linking')
-    .addTag('IOCs', 'Indicators of Compromise data models')
+    .addTag('Alerts', 'Security alert triage, correlation & case linking')
+    .addTag('IOCs', 'Indicators of Compromise search & intelligence management')
+    .addTag('Detection Rules', 'SIEM & Detection Engine rules management')
+    .addTag('Malware', 'Malware Bazaar samples, hashes & sandbox analysis')
+    .addTag('CVEs', 'NVD Vulnerability Database & CVE intelligence')
+    .addTag('Threat Feeds', 'External threat feed integration & MISP sync status')
+    .addTag('Forensics', 'Digital forensic evidence & Chain of Custody tracking')
+    .addTag('SIEM', 'Log ingestion & SIEM alert export integration')
     .addTag('Audit Logs', 'System mutation logs for compliance & auditing')
     .build();
 

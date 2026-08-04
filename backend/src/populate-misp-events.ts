@@ -5,8 +5,8 @@ async function populateMispData() {
   console.log('       POPULATING LIVE MISP PLATFORM WITH REAL EVENTS  ');
   console.log('======================================================\n');
 
-  const MISP_URL = 'http://localhost:8443';
-  const MISP_KEY = 'LcVwzXXHcG0ctiIutSQGw9xiY61iuucbr7zjMfFG';
+  const MISP_URL = process.env.MISP_URL || 'http://localhost:8443';
+  const MISP_KEY = process.env.MISP_API_KEY || process.env.MISP_KEY || '';
 
   const headers = {
     Authorization: MISP_KEY,

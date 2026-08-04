@@ -87,6 +87,10 @@ model Case {
   iocs              Ioc[]
   forensicArtifacts ForensicArtifact[]
 
+  @@index([status])
+  @@index([severity])
+  @@index([assignedToId])
+
   @@map("cases")
 }
 
@@ -119,6 +123,11 @@ model Alert {
 
   createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime       @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([severity])
+  @@index([lastSeen])
+  @@index([sourceIocId])
 
   @@map("alerts")
 }
@@ -162,6 +171,10 @@ model Ioc {
   alerts            Alert[]
   malwareSamples    MalwareSample[]
   forensicArtifacts ForensicArtifact[]
+
+  @@index([type])
+  @@index([source])
+  @@index([lastSeen])
 
   @@map("iocs")
 }
@@ -250,6 +263,9 @@ model AuditLog {
   targetId     String?  @map("target_id")
   ipAddress    String?  @map("ip_address")
   timestamp    DateTime @default(now())
+
+  @@index([timestamp])
+  @@index([userId])
 
   @@map("audit_logs")
 }

@@ -6,6 +6,7 @@ import { Client } from '@opensearch-project/opensearch';
 export class OpenSearchService implements OnModuleInit {
   private readonly logger = new Logger(OpenSearchService.name);
   private client: Client;
+  private isClusterHealthy = false;
 
   readonly IOC_INDEX = 'ctp-iocs';
   readonly CVE_INDEX = 'ctp-cves';
@@ -16,7 +17,7 @@ export class OpenSearchService implements OnModuleInit {
     this.client = new Client({
       node,
       ssl: { rejectUnauthorized: false },
-      requestTimeout: 1500,
+      requestTimeout: 1000,
       maxRetries: 0,
     });
   }
@@ -27,6 +28,12 @@ export class OpenSearchService implements OnModuleInit {
 
   async ensureIndicesExist() {
     try {
+      const ping = await this.client.ping();
+      if (!ping.body) {
+        this.isClusterHealthy = false;
+        return;
+      }
+
       const iocExists = await this.client.indices.exists({ index: this.IOC_INDEX });
       if (!iocExists.body) {
         await this.client.indices.create({
@@ -96,9 +103,16 @@ export class OpenSearchService implements OnModuleInit {
         });
         this.logger.log(`Created OpenSearch index '${this.MALWARE_INDEX}'`);
       }
+
+      this.isClusterHealthy = true;
     } catch (error: any) {
-      this.logger.warn(`OpenSearch cluster initialization warning (may be starting up): ${error.message}`);
+      this.isClusterHealthy = false;
+      this.logger.warn(`OpenSearch cluster unavailable (using DB fallback): ${error.message}`);
     }
+  }
+
+  isHealthy(): boolean {
+    return this.isClusterHealthy;
   }
 
   async indexIoc(ioc: any) {
@@ -172,23 +186,32 @@ export class OpenSearchService implements OnModuleInit {
   }
 
   async searchIocs(query: string, page = 1, limit = 20) {
+    if (!this.isClusterHealthy) {
+      return null;
+    }
+
     try {
       const pageNum = Math.max(1, Number(page) || 1);
       const limitNum = Math.max(1, Number(limit) || 20);
       const from = (pageNum - 1) * limitNum;
+      const cleanQuery = (query || '').trim();
+
+      const queryBody = cleanQuery
+        ? {
+            multi_match: {
+              query: cleanQuery,
+              fields: ['value^3', 'tags^2', 'type', 'source'],
+              fuzziness: 'AUTO',
+            },
+          }
+        : { match_all: {} };
 
       const response = await this.client.search({
         index: this.IOC_INDEX,
         body: {
           from,
           size: limitNum,
-          query: {
-            multi_match: {
-              query,
-              fields: ['value^3', 'tags^2', 'type', 'source'],
-              fuzziness: 'AUTO',
-            },
-          },
+          query: queryBody,
         },
       });
 
@@ -209,19 +232,24 @@ export class OpenSearchService implements OnModuleInit {
       const pageNum = Math.max(1, Number(page) || 1);
       const limitNum = Math.max(1, Number(limit) || 20);
       const from = (pageNum - 1) * limitNum;
+      const cleanQuery = (query || '').trim();
+
+      const queryBody = cleanQuery
+        ? {
+            multi_match: {
+              query: cleanQuery,
+              fields: ['cveId^3', 'description^2', 'source'],
+              fuzziness: 'AUTO',
+            },
+          }
+        : { match_all: {} };
 
       const response = await this.client.search({
         index: this.CVE_INDEX,
         body: {
           from,
           size: limitNum,
-          query: {
-            multi_match: {
-              query,
-              fields: ['cveId^3', 'description^2', 'source'],
-              fuzziness: 'AUTO',
-            },
-          },
+          query: queryBody,
         },
       });
 
@@ -242,19 +270,24 @@ export class OpenSearchService implements OnModuleInit {
       const pageNum = Math.max(1, Number(page) || 1);
       const limitNum = Math.max(1, Number(limit) || 20);
       const from = (pageNum - 1) * limitNum;
+      const cleanQuery = (query || '').trim();
+
+      const queryBody = cleanQuery
+        ? {
+            multi_match: {
+              query: cleanQuery,
+              fields: ['name^3', 'malwareFamily^3', 'hashSha256^4', 'hashMd5', 'fileType', 'tags^2'],
+              fuzziness: 'AUTO',
+            },
+          }
+        : { match_all: {} };
 
       const response = await this.client.search({
         index: this.MALWARE_INDEX,
         body: {
           from,
           size: limitNum,
-          query: {
-            multi_match: {
-              query,
-              fields: ['name^3', 'malwareFamily^3', 'hashSha256^4', 'hashMd5', 'fileType', 'tags^2'],
-              fuzziness: 'AUTO',
-            },
-          },
+          query: queryBody,
         },
       });
 

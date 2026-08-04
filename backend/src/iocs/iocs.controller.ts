@@ -34,10 +34,17 @@ export class IocsController {
   @Get('search')
   @ApiOperation({ summary: 'Search IOCs via OpenSearch mirror' })
   @ApiQuery({ name: 'q', required: false, type: String, description: 'Search term or IP/domain/hash value' })
+  @ApiQuery({ name: 'query', required: false, type: String, description: 'Alternative search query parameter' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  search(@Query('q') query?: string, @Query('page') page?: number, @Query('limit') limit?: number) {
-    return this.iocsService.search(query || '', page, limit);
+  search(
+    @Query('q') q?: string,
+    @Query('query') altQuery?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    const searchTerm = q || altQuery || '';
+    return this.iocsService.search(searchTerm, page, limit);
   }
 
   @Get(':id')

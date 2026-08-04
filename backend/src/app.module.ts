@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { BullModule } from '@nestjs/bullmq';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -21,6 +22,7 @@ import { ForensicsModule } from './forensics/forensics.module';
 import { SiemModule } from './siem/siem.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
+import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 
 @Module({
   imports: [
@@ -28,6 +30,15 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
       isGlobal: true,
       envFilePath: ['../.env', '.env'],
     }),
+    ThrottlerModule.forRoot([{
+      name: 'short',
+      ttl: 1000,
+      limit: 20,
+    }, {
+      name: 'medium',
+      ttl: 60000,
+      limit: 100,
+    }]),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -57,6 +68,10 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     SiemModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
+    },
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,

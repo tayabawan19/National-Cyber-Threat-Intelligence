@@ -13,6 +13,9 @@ import {
   ExternalLink,
   Database,
   Briefcase,
+  Activity,
+  Radio,
+  Terminal
 } from 'lucide-react';
 import { DashboardView } from './DashboardView';
 import { AlertsView } from './AlertsView';
@@ -21,6 +24,7 @@ import { DetectionRulesView } from './DetectionRulesView';
 import { AttackMapView } from './AttackMapView';
 import { SearchView } from './SearchView';
 import { MalwareView } from './MalwareView';
+import { MatrixRainBg } from './MatrixRainBg';
 
 export const ProtectedShell: React.FC = () => {
   const { user, logout, token } = useAuth();
@@ -30,22 +34,22 @@ export const ProtectedShell: React.FC = () => {
   const getRoleBadgeColor = (role?: string) => {
     switch (role) {
       case 'ADMIN':
-        return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+        return 'bg-purple-950/80 text-purple-400 border-purple-500/40 shadow-sm shadow-purple-950';
       case 'SOC_ANALYST':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        return 'bg-terminal-green-dark text-terminal-green border-terminal-border shadow-sm shadow-terminal-green-dark/30';
       case 'INVESTIGATOR':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        return 'bg-amber-950/80 text-amber-400 border-amber-500/40 shadow-sm shadow-amber-950';
       case 'READ_ONLY':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        return 'bg-slate-900 text-slate-400 border-slate-700';
       default:
-        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+        return 'bg-slate-900 text-slate-400 border-slate-800';
     }
   };
 
   const navItems = [
     { id: 'dashboard', label: 'SOC Dashboard', icon: LayoutDashboard },
-    { id: 'alerts', label: 'Alerts Stream', icon: AlertTriangle },
-    { id: 'cases', label: 'Investigations', icon: Briefcase },
+    { id: 'alerts', label: 'Alert Stream', icon: AlertTriangle },
+    { id: 'cases', label: 'Case Management', icon: Briefcase },
     { id: 'map', label: 'Live Attack Map', icon: Globe },
     { id: 'search', label: 'Threat Search', icon: Search },
     { id: 'malware', label: 'Malware DB', icon: Database },
@@ -54,55 +58,66 @@ export const ProtectedShell: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#090d16] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#031406] bg-terminal-grid flex flex-col font-mono text-terminal-green relative">
+      {/* Animated Matrix Digital Rain Background */}
+      <MatrixRainBg opacity={0.28} />
+
+      {/* CRT Scanlines Overlay */}
+      <div className="fixed inset-0 bg-crt-scanlines pointer-events-none z-50 opacity-30" />
+
       {/* Top Navbar */}
-      <header className="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-terminal-border bg-[#0a0f0a]/95 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
-              <Shield className="w-6 h-6 text-blue-400" />
+            <div className="p-2 rounded-lg bg-terminal-surface border border-terminal-border text-terminal-green text-glow-green">
+              <Terminal className="w-5 h-5 text-terminal-green" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-slate-100 tracking-wide flex items-center gap-2">
-                <span>CYBER THREAT INTEL PLATFORM</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                  PHASE 4 POLISHED
+              <h1 className="text-xs font-mono font-bold text-terminal-green tracking-wider flex items-center gap-2 text-glow-green">
+                <span>NATIONAL CYBER THREAT INTEL</span>
+                <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-terminal-green-dark text-terminal-green border border-terminal-border">
+                  NODE_01
                 </span>
               </h1>
-              <p className="text-[10px] text-slate-400 font-mono">SOC COMMAND SHELL • AI COPILOT</p>
+              <p className="text-[10px] text-terminal-green-dim font-mono flex items-center gap-1.5 mt-0.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-terminal-green animate-pulse" />
+                <span>root@ctip-sec:~#</span>
+                <span className="text-terminal-muted">•</span>
+                <span className="text-terminal-green-dim">AI COPILOT ONLINE</span>
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <a
               href="http://localhost:3000/api/docs"
               target="_blank"
               rel="noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono border border-slate-700 transition"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#050705] hover:bg-terminal-surface text-terminal-green text-xs font-mono border border-terminal-border transition"
             >
-              <FileText className="w-3.5 h-3.5 text-blue-400" />
-              <span>Swagger API Docs</span>
-              <ExternalLink className="w-3 h-3 opacity-60" />
+              <FileText className="w-3.5 h-3.5 text-terminal-green" />
+              <span>Swagger Docs</span>
+              <ExternalLink className="w-3 h-3 text-terminal-green-dim" />
             </a>
 
-            <div className="flex items-center gap-3 pl-4 border-l border-slate-800">
+            <div className="flex items-center gap-3 pl-3 border-l border-terminal-border">
               <div className="text-right hidden md:block">
-                <p className="text-xs font-medium text-slate-200">{user?.email}</p>
+                <p className="text-xs font-mono text-terminal-green">{user?.email}</p>
                 <span
-                  className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${getRoleBadgeColor(
+                  className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold border ${getRoleBadgeColor(
                     user?.role,
                   )}`}
                 >
-                  {user?.role}
+                  [{user?.role}]
                 </span>
               </div>
 
               <button
                 onClick={logout}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-medium transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-500/40 text-xs font-mono font-bold transition-all"
                 title="Sign out"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
@@ -110,7 +125,7 @@ export const ProtectedShell: React.FC = () => {
         </div>
 
         {/* Tab Navigation Sub-Header */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1 overflow-x-auto border-t border-slate-800/60 pt-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1 overflow-x-auto border-t border-terminal-border pt-1 font-mono">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -118,22 +133,22 @@ export const ProtectedShell: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-mono font-semibold border-b-2 transition whitespace-nowrap ${
+                className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-mono font-bold border-b-2 transition whitespace-nowrap ${
                   isActive
-                    ? 'border-blue-500 text-blue-400 bg-blue-500/10 rounded-t-lg'
-                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                    ? 'border-terminal-green text-terminal-green bg-terminal-green-dark/60 rounded-t-lg text-glow-green'
+                    : 'border-transparent text-terminal-green-dim hover:text-terminal-green hover:bg-terminal-surface'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span>{item.label}</span>
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-terminal-green' : 'text-terminal-muted'}`} />
+                <span>{isActive ? `[ ${item.label} ]` : item.label}</span>
               </button>
             );
           })}
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-mono">
         {activeTab === 'dashboard' && (
           <DashboardView
             token={token || ''}
@@ -175,45 +190,57 @@ export const ProtectedShell: React.FC = () => {
         )}
 
         {activeTab === 'system' && (
-          <div className="space-y-6">
-            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-md space-y-4">
-              <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                <Layers className="w-5 h-5 text-blue-400" />
-                <span>Platform Architecture & Services Overview</span>
+          <div className="space-y-6 font-mono">
+            <div className="soc-card p-6 rounded-xl border border-terminal-border space-y-4 bg-[#0a0f0a]/90">
+              <h2 className="text-sm font-bold text-terminal-green flex items-center gap-2 font-mono text-glow-green">
+                <Layers className="w-5 h-5 text-terminal-green" />
+                <span>SYSTEM ARCHITECTURE & SERVICE BUS TELEMETRY</span>
               </h2>
-              <p className="text-xs text-slate-400">
-                Phase 4 Analyst-Facing Experience: Centralized investigation case files, audit-log timeline correlation, spatial attack map clustering, and zero-data UI states.
+              <p className="text-xs text-terminal-green-dim">
+                Phase 6 Production-Hardened Infrastructure: PostgreSQL 16 indexed store, OpenSearch 2.13 search mirror, Redis BullMQ queues, self-hosted MISP Threat Sharing, and Groq LLM Advisory Engine.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-                <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700 space-y-2">
-                  <span className="text-xs font-mono font-bold text-blue-400 block">POSTGRESQL 16</span>
-                  <p className="text-xs text-slate-300">Authoritative Source of Truth for Users, Cases, Alerts, IOCs, CVEs, MalwareSamples, DetectionRules, and AuditLogs.</p>
+                <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
+                  <span className="text-xs font-mono font-bold text-terminal-green flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5" /> POSTGRESQL 16
+                  </span>
+                  <p className="text-xs text-terminal-green-dim">Authoritative Relational Store for Core Entities, Indexed Alerts, Cases, IOCs, CVEs, and Append-Only Audit Logs.</p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700 space-y-2">
-                  <span className="text-xs font-mono font-bold text-red-400 block">REDIS + BULLMQ</span>
-                  <p className="text-xs text-slate-300">Asynchronous background ingestion queue processing `sync-otx`, `sync-nvd`, `sync-abusech`, `sync-malware` jobs.</p>
+                <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
+                  <span className="text-xs font-mono font-bold text-red-400 flex items-center gap-1.5">
+                    <Radio className="w-3.5 h-3.5 text-red-400" /> REDIS 7 + BULLMQ
+                  </span>
+                  <p className="text-xs text-terminal-green-dim">Async Threat Feed Ingestion Broker (`sync-otx`, `sync-nvd`, `sync-abusech`, `sync-malware`, `sync-misp`).</p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700 space-y-2">
-                  <span className="text-xs font-mono font-bold text-emerald-400 block">GROQ LLM API</span>
-                  <p className="text-xs text-slate-300">Fast inference (`llama-3.3-70b-versatile`) generating threat summaries & advisory severity scores.</p>
+                <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
+                  <span className="text-xs font-mono font-bold text-amber-400 flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 text-amber-400" /> GROQ LLM ADVISORY
+                  </span>
+                  <p className="text-xs text-terminal-green-dim">Automated Threat Risk Scoring (`llama-3.3-70b-versatile`) producing natural language severity explanations.</p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700 space-y-2">
-                  <span className="text-xs font-mono font-bold text-cyan-400 block">OPENSEARCH 2.18</span>
-                  <p className="text-xs text-slate-300">Full-text search mirror indexing `ctp-iocs`, `ctp-cves`, and `ctp-malware` for instant search.</p>
+                <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
+                  <span className="text-xs font-mono font-bold text-terminal-green flex items-center gap-1.5">
+                    <Search className="w-3.5 h-3.5 text-terminal-green" /> OPENSEARCH MIRROR
+                  </span>
+                  <p className="text-xs text-terminal-green-dim">Full-text search mirror (`ctp-iocs`, `ctp-cves`, `ctp-malware`) with instant database fallback support.</p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700 space-y-2">
-                  <span className="text-xs font-mono font-bold text-purple-400 block">NESTJS REST API</span>
-                  <p className="text-xs text-slate-300">Aggregated SOC Dashboard API (`/api/dashboard/stats`), Case Investigation endpoints (`/api/cases`), and RBAC guards.</p>
+                <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
+                  <span className="text-xs font-mono font-bold text-purple-400 flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-purple-400" /> NESTJS REST API
+                  </span>
+                  <p className="text-xs text-terminal-green-dim">Class Validator DTOs, Swagger Docs (`/api/docs`), Per-User Rate Limiting (`@nestjs/throttler`), and Configurable CORS.</p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700 space-y-2">
-                  <span className="text-xs font-mono font-bold text-yellow-400 block">REACT + VITE SHELL</span>
-                  <p className="text-xs text-slate-300">Spatial Clustered Attack Map, Investigation Workflows, Strict Read-Only RBAC UI, and Loading Skeletons.</p>
+                <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
+                  <span className="text-xs font-mono font-bold text-terminal-green flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-terminal-green" /> SELF-HOSTED MISP
+                  </span>
+                  <p className="text-xs text-terminal-green-dim">Threat-Sharing Platform with Dedicated MariaDB storage & CIRCL OSINT Community Feed Integration.</p>
                 </div>
               </div>
             </div>

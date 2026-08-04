@@ -109,26 +109,26 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
   const getCorrelationBadge = (type: string) => {
     switch (type) {
       case 'MULTI_CONDITION':
-        return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+        return 'bg-purple-950/80 text-purple-400 border-purple-500/40';
       case 'THRESHOLD':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        return 'bg-yellow-950/80 text-yellow-400 border-yellow-500/40';
       case 'CORRELATION':
-        return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+        return 'bg-terminal-green-dark text-terminal-green border-terminal-border';
       default:
-        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+        return 'bg-[#050705] text-terminal-green-dim border-terminal-border';
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-mono text-terminal-green">
       {/* Top Header */}
-      <div className="bg-slate-900/70 p-6 rounded-2xl border border-slate-800 backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="soc-card p-6 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono">
         <div>
-          <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-blue-400" />
-            <span>Data-Driven Detection Rules Engine</span>
+          <h2 className="text-sm font-bold font-mono text-terminal-green flex items-center gap-2 text-glow-green">
+            <Settings className="w-5 h-5 text-terminal-green" />
+            <span>DATA-DRIVEN DETECTION RULES ENGINE</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-terminal-green-dim mt-0.5 font-mono">
             Configure multi-condition, threshold, and correlation rules evaluated in real time post feed sync.
           </p>
         </div>
@@ -136,9 +136,9 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
         {!isReadOnly && (
           <button
             onClick={() => setShowModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold transition flex items-center gap-2 shadow-lg shadow-blue-600/20"
+            className="px-4 py-2.5 rounded-lg bg-terminal-green-dark hover:bg-terminal-border text-terminal-green text-xs font-mono font-bold transition flex items-center gap-2 border border-terminal-border shadow-lg"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-terminal-green" />
             <span>New Multi-Condition Rule</span>
           </button>
         )}
@@ -146,61 +146,61 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
 
       {/* Rules Grid */}
       {loading ? (
-        <div className="p-16 text-center text-slate-500 font-mono text-xs space-y-3">
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <div className="p-16 text-center text-terminal-muted font-mono text-xs space-y-3">
+          <div className="w-6 h-6 border-2 border-terminal-green border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p>Loading detection rules...</p>
         </div>
       ) : rules.length === 0 ? (
-        <div className="p-16 text-center text-slate-500 font-mono text-xs space-y-2">
-          <Settings className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
-          <p className="text-slate-400 font-semibold">No Detection Rules Configured</p>
-          <p className="text-[11px] text-slate-600">Create a rule to automate threat alert correlation.</p>
+        <div className="p-16 text-center text-terminal-muted font-mono text-xs space-y-2">
+          <Settings className="w-8 h-8 text-terminal-muted mx-auto mb-2 opacity-50" />
+          <p className="text-terminal-green font-semibold">No Detection Rules Configured</p>
+          <p className="text-[11px] text-terminal-green-dim">Create a rule to automate threat alert correlation.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-mono">
           {rules.map((rule) => (
             <div
               key={rule.id}
-              className="bg-slate-900/70 p-5 rounded-2xl border border-slate-800 backdrop-blur-md space-y-4 hover:border-slate-700 transition shadow-xl"
+              className="soc-card p-5 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 space-y-4 hover:border-terminal-green/60 transition shadow-xl font-mono"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="space-y-1">
-                  <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-mono font-bold border ${getCorrelationBadge(rule.correlationType)}`}>
+              <div className="flex items-start justify-between gap-2 font-mono">
+                <div className="space-y-1 font-mono">
+                  <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold border ${getCorrelationBadge(rule.correlationType)}`}>
                     {rule.correlationType || 'SIMPLE'} RULE
                   </span>
-                  <h3 className="text-sm font-bold text-slate-100">{rule.name}</h3>
+                  <h3 className="text-xs font-bold font-mono text-terminal-green text-glow-green">{rule.name}</h3>
                 </div>
 
                 {!isReadOnly ? (
                   <button
                     onClick={() => handleToggleRule(rule.id, rule.enabled)}
-                    className="text-slate-400 hover:text-slate-200 transition"
+                    className="text-terminal-green-dim hover:text-terminal-green transition"
                     title="Toggle Rule Active Status"
                   >
                     {rule.enabled ? (
-                      <ToggleRight className="w-7 h-7 text-emerald-400" />
+                      <ToggleRight className="w-7 h-7 text-terminal-green" />
                     ) : (
-                      <ToggleLeft className="w-7 h-7 text-slate-600" />
+                      <ToggleLeft className="w-7 h-7 text-terminal-muted" />
                     )}
                   </button>
                 ) : (
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${rule.enabled ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-500'}`}>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${rule.enabled ? 'bg-terminal-green-dark text-terminal-green border border-terminal-border' : 'bg-[#050705] text-terminal-muted'}`}>
                     {rule.enabled ? 'Enabled' : 'Disabled'}
                   </span>
                 )}
               </div>
 
-              <p className="text-xs text-slate-400 leading-relaxed min-h-[36px]">
+              <p className="text-xs text-terminal-green-dim leading-relaxed min-h-[36px] font-mono">
                 {rule.description || 'No description provided.'}
               </p>
 
-              <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs font-mono">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${rule.severity === 'CRITICAL' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+              <div className="pt-2 border-t border-terminal-border flex items-center justify-between text-xs font-mono">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${rule.severity === 'CRITICAL' ? 'bg-red-950/80 text-red-400 border border-red-500/40 glow-red' : 'bg-orange-950/80 text-orange-400 border border-orange-500/40'}`}>
                   {rule.severity}
                 </span>
 
-                <span className="text-[10px] text-slate-500">
-                  {rule.enabled ? 'Active Engine' : 'Disabled'}
+                <span className="text-[10px] text-terminal-green-dim">
+                  {rule.enabled ? 'Engine Active' : 'Disabled'}
                 </span>
               </div>
             </div>
@@ -210,80 +210,80 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
 
       {/* New Rule Creator Modal - Render ONLY if not READ_ONLY */}
       {showModal && !isReadOnly && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                <GitBranch className="w-4 h-4 text-blue-400" />
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="soc-card border border-terminal-border rounded-xl max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs bg-[#0a0f0a]">
+            <div className="flex items-center justify-between pb-3 border-b border-terminal-border">
+              <h3 className="text-sm font-bold text-terminal-green flex items-center gap-2 font-mono uppercase text-glow-green">
+                <GitBranch className="w-4 h-4 text-terminal-green" />
                 <span>Create Detection Rule</span>
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setShowModal(false)} className="text-terminal-green-dim hover:text-terminal-green font-mono">
                 Cancel
               </button>
             </div>
 
-            <form onSubmit={handleCreateRule} className="space-y-4">
+            <form onSubmit={handleCreateRule} className="space-y-4 font-mono">
               <div>
-                <label className="block text-[10px] text-slate-400 mb-1 uppercase">Rule Name</label>
+                <label className="block text-[10px] text-terminal-green-dim mb-1 uppercase">Rule Name</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Multi-Tag Botnet & Ransomware Rule"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] text-slate-400 mb-1 uppercase">Description</label>
+                <label className="block text-[10px] text-terminal-green-dim mb-1 uppercase">Description</label>
                 <input
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Rule purpose and threat context..."
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 font-mono">
                 <div>
-                  <label className="block text-[10px] text-slate-400 mb-1 uppercase">Correlation Type</label>
+                  <label className="block text-[10px] text-terminal-green-dim mb-1 uppercase">Correlation Type</label>
                   <select
                     value={correlationType}
                     onChange={(e) => setCorrelationType(e.target.value as any)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                   >
-                    <option value="MULTI_CONDITION">MULTI_CONDITION (AND/OR)</option>
-                    <option value="THRESHOLD">THRESHOLD (Occurrence Count)</option>
-                    <option value="CORRELATION">CORRELATION (CVE Link)</option>
-                    <option value="SIMPLE">SIMPLE (Single Tag)</option>
+                    <option value="MULTI_CONDITION" className="bg-[#050705]">MULTI_CONDITION (AND/OR)</option>
+                    <option value="THRESHOLD" className="bg-[#050705]">THRESHOLD (Occurrence Count)</option>
+                    <option value="CORRELATION" className="bg-[#050705]">CORRELATION (CVE Link)</option>
+                    <option value="SIMPLE" className="bg-[#050705]">SIMPLE (Single Tag)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] text-slate-400 mb-1 uppercase">Severity</label>
+                  <label className="block text-[10px] text-terminal-green-dim mb-1 uppercase">Severity</label>
                   <select
                     value={severity}
                     onChange={(e) => setSeverity(e.target.value as any)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                   >
-                    <option value="CRITICAL">CRITICAL</option>
-                    <option value="HIGH">HIGH</option>
-                    <option value="MEDIUM">MEDIUM</option>
-                    <option value="LOW">LOW</option>
+                    <option value="CRITICAL" className="bg-[#050705]">CRITICAL</option>
+                    <option value="HIGH" className="bg-[#050705]">HIGH</option>
+                    <option value="MEDIUM" className="bg-[#050705]">MEDIUM</option>
+                    <option value="LOW" className="bg-[#050705]">LOW</option>
                   </select>
                 </div>
               </div>
 
               {correlationType === 'MULTI_CONDITION' && (
-                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-3">
+                <div className="p-3 bg-[#050705] rounded border border-terminal-border space-y-3 font-mono">
                   <div>
-                    <label className="block text-[10px] text-slate-400 mb-1 uppercase">Logical Operator</label>
+                    <label className="block text-[10px] text-terminal-green-dim mb-1 uppercase">Logical Operator</label>
                     <select
                       value={logicalOperator}
                       onChange={(e) => setLogicalOperator(e.target.value as any)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100"
+                      className="w-full bg-[#050705] border border-terminal-border rounded px-2.5 py-1.5 text-terminal-green font-mono"
                     >
                       <option value="AND">AND (All Conditions Required)</option>
                       <option value="OR">OR (Any Condition Required)</option>
@@ -291,34 +291,34 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
                   </div>
 
                   <div>
-                    <label className="block text-[10px] text-slate-400 mb-1 uppercase">Threat Tags (Comma Separated)</label>
+                    <label className="block text-[10px] text-terminal-green-dim mb-1 uppercase">Threat Tags (Comma Separated)</label>
                     <input
                       type="text"
                       value={tagInput}
                       onChange={(e) => setTagInput(e.target.value)}
                       placeholder="botnet, c2"
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100"
+                      className="w-full bg-[#050705] border border-terminal-border rounded px-2.5 py-1.5 text-terminal-green font-mono"
                     />
                   </div>
                 </div>
               )}
 
               {correlationType === 'THRESHOLD' && (
-                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                  <label className="block text-[10px] text-slate-400 mb-1 uppercase">Min Occurrences Threshold</label>
+                <div className="p-3 bg-[#050705] rounded border border-terminal-border font-mono">
+                  <label className="block text-[10px] text-terminal-green-dim mb-1 uppercase">Min Occurrences Threshold</label>
                   <input
                     type="number"
                     value={thresholdCount}
                     onChange={(e) => setThresholdCount(Number(e.target.value))}
                     min={2}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100"
+                    className="w-full bg-[#050705] border border-terminal-border rounded px-2.5 py-1.5 text-terminal-green font-mono"
                   />
                 </div>
               )}
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition shadow-lg shadow-blue-600/20"
+                className="w-full py-2.5 rounded bg-terminal-green-dark hover:bg-terminal-border text-terminal-green font-bold transition border border-terminal-border font-mono"
               >
                 Save & Deploy Rule
               </button>

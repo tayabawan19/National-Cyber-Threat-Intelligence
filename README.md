@@ -14,21 +14,21 @@ An enterprise AI-assisted Security Operations Center (SOC) threat intelligence p
 | **Phase 3** | Multi-Condition Detection Engine, Deduplication & Groq AI Threat Summaries | ✅ Verified |
 | **Phase 4** | SOC Analyst Experience, Spatial Attack Map, Case Management & Read-Only RBAC | ✅ Verified |
 | **Phase 5** | Digital Forensics Module, SIEM Export Stub & Self-Hosted MISP Integration | ✅ Verified |
-| **Phase 6** | Hardening, Production Deployment & Infrastructure Hardening | 🔄 In Progress |
+| **Phase 6** | Hardening, Production Deployment Prep, Load Testing & Security Audit | ✅ Verified |
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Backend Framework**: NestJS (TypeScript), REST APIs, Class Validator DTOs, Swagger/OpenAPI (`/api/docs`)
+- **Backend Framework**: NestJS (TypeScript), REST APIs, Class Validator DTOs, Swagger/OpenAPI (`/api/docs`), `@nestjs/throttler` Rate Limiting
 - **Frontend Shell**: React 18, Vite, TypeScript, Vanilla CSS, Lucide React Icons
-- **Primary Database & ORM**: PostgreSQL 16, Prisma ORM
+- **Primary Database & ORM**: PostgreSQL 16, Prisma ORM (Indexed for high-concurrency queries)
 - **Threat-Sharing Platform**: Self-Hosted MISP + Dedicated MariaDB 10.11 database
 - **Search & Mirror Engine**: OpenSearch 2.13 (`ctp-iocs`, `ctp-cves`, `ctp-malware`)
 - **Async Queue & Job Broker**: Redis 7, BullMQ (`sync-otx`, `sync-nvd`, `sync-abusech`, `sync-malware`, `sync-misp`)
 - **AI Threat Scoring & Summaries**: Groq API (`llama-3.3-70b-versatile`)
 - **Container Orchestration**: Docker Compose
-- **Security & Authentication**: JWT Bearer Tokens, Bcrypt Hashing, Role-Based Access Control (`RolesGuard`)
+- **Security & Authentication**: JWT Bearer Tokens, Bcrypt Hashing, Role-Based Access Control (`RolesGuard`), Rate Limiting, Configurable CORS
 
 ---
 
@@ -43,6 +43,7 @@ An enterprise AI-assisted Security Operations Center (SOC) threat intelligence p
 - **Digital Forensics Module**: Immutable forensic artifact registry (`LOG_FILE`, `MEMORY_DUMP_META`, `NETWORK_CAPTURE_META`, `FILE_METADATA`) with strict append-only chain-of-custody tracking. Rejects past entry editing or deletion.
 - **SIEM Integration Export**: Standardized export endpoint (`GET /api/siem/export`) supporting Common Event Format (`CEF`) and structured `JSON`, protected via administrative static service keys (`X-SIEM-API-KEY`).
 - **Role-Based Access Control (RBAC)**: Fine-grained permissions across `ADMIN`, `INVESTIGATOR`, `SOC_ANALYST`, and `READ_ONLY` roles.
+- **Security Hardened**: Global DTO input validation (`class-validator`), rate-limited authentication (`10 req/min`), environment-configurable CORS, and indexing across high-traffic database columns.
 
 ---
 
@@ -57,6 +58,7 @@ cp .env.example .env
 ### Environment Variable Names
 - `NODE_ENV`
 - `PORT`
+- `CORS_ORIGIN`
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
 - `POSTGRES_DB`
@@ -98,10 +100,16 @@ npx prisma db push
 npx prisma db seed
 ```
 
-### 3. Enable MISP Community Feeds & Fetch Events (First Run)
-To populate the self-hosted MISP instance with authentic community threat events:
+### 3. Trigger Explicit Data Ingestion
+> [!IMPORTANT]
+> Ingestion is triggered explicitly via seed/sync scripts rather than on container boot to prevent unintentional background data overwrites.
+
 ```bash
 cd backend
+# Synchronize all threat feeds (OTX, NVD, abuse.ch, MISP)
+npx ts-node src/run-all-syncs.ts
+
+# Fetch live CIRCL OSINT threat events into MISP
 npx ts-node src/fetch-circl-osint-feed.ts
 ```
 
@@ -113,12 +121,31 @@ npx ts-node src/fetch-circl-osint-feed.ts
 
 ---
 
+## 🔧 Troubleshooting & Setup FAQs
+
+### Q1: OpenSearch container connection fails during backend boot?
+- **Root Cause**: OpenSearch requires ~15-20 seconds to initialize Java heap and cluster status on fresh docker volume creation.
+- **Solution**: The backend automatically retries connection. If running standalone, verify OpenSearch health via `curl http://localhost:9200`.
+
+### Q2: Data appears empty on clean clone after `docker compose up`?
+- **Root Cause**: Feed ingestion is non-blocking and explicitly triggered via sync scripts to avoid container boot latency.
+- **Solution**: Run `npx ts-node src/run-all-syncs.ts` inside `backend/` to populate live feeds into Postgres and OpenSearch.
+
+### Q3: Rate Limit HTTP 429 Too Many Requests errors during rapid API testing?
+- **Root Cause**: `@nestjs/throttler` enforces rate limits (100 req/min for general API, 10 req/min for `POST /api/auth/login`).
+- **Solution**: Wait 60 seconds or configure custom limits in `app.module.ts`.
+
+---
+
 ## 🧪 Verification & Automated Test Suites
 
 Run the automated verification scripts inside the `backend/` directory:
 
 ```bash
 cd backend
+
+# Run Phase 6 Load & Stress Testing Benchmark
+npx ts-node src/test-load-performance.ts
 
 # Run Phase 5 Automated Verification Suite
 npx ts-node src/test-phase5-verification.ts

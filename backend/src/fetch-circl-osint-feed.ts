@@ -7,8 +7,8 @@ async function fetchCommunityOsintFeed() {
 
   const MANIFEST_URL = 'http://www.botvrij.eu/data/feed-osint/manifest.json';
   const BASE_FEED_URL = 'http://www.botvrij.eu/data/feed-osint';
-  const MISP_URL = 'http://localhost:8443';
-  const MISP_KEY = 'LcVwzXXHcG0ctiIutSQGw9xiY61iuucbr7zjMfFG';
+  const MISP_URL = process.env.MISP_URL || 'http://localhost:8443';
+  const MISP_KEY = process.env.MISP_API_KEY || process.env.MISP_KEY || '';
 
   const headers = {
     Authorization: MISP_KEY,

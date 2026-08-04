@@ -61,7 +61,41 @@ export class IocsService {
   }
 
   async search(query: string, page = 1, limit = 20) {
-    return this.openSearchService.searchIocs(query, Number(page) || 1, Number(limit) || 20);
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 20;
+
+    const osResult = await this.openSearchService.searchIocs(query, pageNum, limitNum);
+    if (osResult) {
+      return osResult;
+    }
+
+    // Fallback to PostgreSQL indexed relational search if OpenSearch mirror is unavailable
+    const skip = (pageNum - 1) * limitNum;
+    const cleanQuery = (query || '').trim();
+
+    const whereClause = cleanQuery
+      ? {
+          OR: [
+            { value: { contains: cleanQuery, mode: 'insensitive' as const } },
+            { source: { contains: cleanQuery, mode: 'insensitive' as const } },
+          ],
+        }
+      : {};
+
+    const [data, total] = await Promise.all([
+      this.prisma.ioc.findMany({
+        where: whereClause,
+        skip,
+        take: limitNum,
+        include: {
+          relatedCase: { select: { id: true, title: true, status: true } },
+        },
+        orderBy: { lastSeen: 'desc' },
+      }),
+      this.prisma.ioc.count({ where: whereClause }),
+    ]);
+
+    return { data, total, page: pageNum, limit: limitNum };
   }
 
   async findOne(id: string) {

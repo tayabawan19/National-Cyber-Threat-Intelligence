@@ -272,26 +272,26 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
   const getSeverityBadge = (sev: string) => {
     switch (sev) {
       case 'CRITICAL':
-        return 'bg-red-500/10 text-red-400 border-red-500/20';
+        return 'bg-red-950/60 text-red-400 border-red-500/40 glow-red';
       case 'HIGH':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        return 'bg-orange-950/60 text-orange-400 border-orange-500/40 glow-orange';
       case 'MEDIUM':
-        return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+        return 'bg-amber-950/60 text-amber-400 border-amber-500/40';
       default:
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        return 'bg-cyan-950/60 text-cyan-400 border-cyan-500/40';
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'OPEN':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        return 'bg-amber-950/60 text-amber-400 border-amber-500/40';
       case 'IN_PROGRESS':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        return 'bg-cyan-950/60 text-cyan-400 border-cyan-500/40';
       case 'CLOSED':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        return 'bg-emerald-950/60 text-emerald-400 border-emerald-500/40';
       default:
-        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+        return 'bg-slate-900 text-slate-400 border-slate-700';
     }
   };
 
@@ -302,74 +302,74 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-mono text-terminal-green">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/70 p-6 rounded-2xl border border-slate-800 backdrop-blur-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 soc-card p-6 rounded-xl border border-terminal-border bg-[#0a0f0a]/90">
         <div>
-          <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-blue-400" />
-            <span>SOC Investigation Workflows & Case Management</span>
+          <h2 className="text-sm font-bold font-mono text-terminal-green flex items-center gap-2 text-glow-green">
+            <Briefcase className="w-5 h-5 text-terminal-green" />
+            <span>SOC INVESTIGATION WORKFLOWS & CASE MANAGEMENT</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-terminal-green-dim mt-0.5 font-mono">
             Correlate security alerts, IOC indicators, CVE vulnerabilities, and malware artifacts in centralized case files.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 font-mono">
           {!isReadOnly && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/20 flex items-center gap-2 transition"
+              className="px-4 py-2.5 rounded-lg bg-terminal-green-dark hover:bg-terminal-border text-terminal-green text-xs font-bold shadow-lg flex items-center gap-2 transition border border-terminal-border"
             >
-              <Plus className="w-4 h-4" />
-              <span>Create New Case</span>
+              <Plus className="w-4 h-4 text-terminal-green" />
+              <span>Create Security Case</span>
             </button>
           )}
         </div>
       </div>
 
       {/* Main Grid: Cases List & Case Detail View */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono">
         {/* Left Column: Cases List Table */}
-        <div className={`bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 overflow-hidden shadow-xl ${selectedCase ? 'lg:col-span-1' : 'lg:col-span-3'}`}>
-          <div className="p-4 border-b border-slate-800 flex items-center justify-between gap-3">
-            <h3 className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">
+        <div className={`soc-card rounded-xl border border-terminal-border bg-[#0a0f0a]/90 overflow-hidden shadow-2xl ${selectedCase ? 'lg:col-span-1' : 'lg:col-span-3'}`}>
+          <div className="p-4 border-b border-terminal-border flex items-center justify-between gap-3 font-mono">
+            <h3 className="text-xs font-bold text-terminal-green uppercase tracking-wider text-glow-green">
               Investigation Cases ({filteredCases.length})
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 font-mono">
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="bg-slate-800 text-slate-300 text-[10px] font-mono px-2 py-1 rounded border border-slate-700 focus:outline-none"
+                className="bg-[#050705] text-terminal-green text-[10px] font-mono px-2 py-1 rounded border border-terminal-border focus:outline-none"
               >
-                <option value="">All Statuses</option>
-                <option value="OPEN">OPEN</option>
-                <option value="IN_PROGRESS">IN_PROGRESS</option>
-                <option value="CLOSED">CLOSED</option>
+                <option value="" className="bg-[#050705]">All Statuses</option>
+                <option value="OPEN" className="bg-[#050705]">OPEN</option>
+                <option value="IN_PROGRESS" className="bg-[#050705]">IN_PROGRESS</option>
+                <option value="CLOSED" className="bg-[#050705]">CLOSED</option>
               </select>
             </div>
           </div>
 
           {loading ? (
-            <div className="p-8 text-center text-slate-500 font-mono text-xs space-y-3">
-              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <div className="p-8 text-center text-terminal-muted font-mono text-xs space-y-3">
+              <div className="w-6 h-6 border-2 border-terminal-green border-t-transparent rounded-full animate-spin mx-auto"></div>
               <p>Loading investigation cases...</p>
             </div>
           ) : filteredCases.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 font-mono text-xs space-y-2">
-              <Briefcase className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
-              <p className="text-slate-400 font-semibold">No Investigation Cases Found</p>
-              <p className="text-[11px] text-slate-600">Create a case or attach an alert from the stream to start an investigation.</p>
+            <div className="p-12 text-center text-terminal-muted font-mono text-xs space-y-2">
+              <Briefcase className="w-8 h-8 text-terminal-muted mx-auto mb-2 opacity-50" />
+              <p className="text-terminal-green font-semibold">No Investigation Cases Found</p>
+              <p className="text-[11px] text-terminal-green-dim">Create a case or attach an alert from the stream to start an investigation.</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-800/80 max-h-[700px] overflow-y-auto">
+            <div className="divide-y divide-terminal-border/80 max-h-[700px] overflow-y-auto font-mono">
               {filteredCases.map((c) => (
                 <div
                   key={c.id}
                   onClick={() => fetchCaseDetail(c.id)}
-                  className={`p-4 hover:bg-slate-800/60 cursor-pointer transition space-y-2 ${selectedCase?.id === c.id ? 'bg-slate-800/80 border-l-4 border-blue-500' : ''}`}
+                  className={`p-4 hover:bg-terminal-surface cursor-pointer transition space-y-2 font-mono ${selectedCase?.id === c.id ? 'bg-terminal-green-dark/60 border-l-4 border-terminal-green' : ''}`}
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center justify-between gap-2 font-mono">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getSeverityBadge(c.severity)}`}>
                       {c.severity}
                     </span>
@@ -378,10 +378,10 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
                     </span>
                   </div>
 
-                  <h4 className="text-xs font-bold text-slate-100 line-clamp-1">{c.title}</h4>
-                  {c.description && <p className="text-[11px] text-slate-400 line-clamp-2">{c.description}</p>}
+                  <h4 className="text-xs font-bold font-mono text-terminal-green line-clamp-1">{c.title}</h4>
+                  {c.description && <p className="text-[11px] font-mono text-terminal-green-dim line-clamp-2">{c.description}</p>}
 
-                  <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-1">
+                  <div className="flex items-center justify-between text-[10px] text-terminal-green-dim font-mono pt-1">
                     <span>Alerts: {c.alerts?.length || 0} • IOCs: {c.iocs?.length || 0}</span>
                     <span>{new Date(c.createdAt).toLocaleDateString()}</span>
                   </div>
@@ -393,10 +393,10 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
 
         {/* Right Column: Case Detail & Linked Entities Workspace */}
         {selectedCase ? (
-          <div className="lg:col-span-2 bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
+          <div className="lg:col-span-2 soc-card p-6 rounded-xl border border-terminal-border bg-[#0a0f0a] shadow-2xl space-y-6 font-mono">
             {/* Case Header & Triage Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-              <div className="space-y-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-terminal-border">
+              <div className="space-y-1 font-mono">
                 <div className="flex items-center gap-2">
                   <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${getSeverityBadge(selectedCase.severity)}`}>
                     {selectedCase.severity}
@@ -405,16 +405,16 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
                     {selectedCase.status}
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-100">{selectedCase.title}</h3>
-                <p className="text-xs text-slate-400">{selectedCase.description || 'No description provided.'}</p>
+                <h3 className="text-base font-bold font-mono text-terminal-green text-glow-green">{selectedCase.title}</h3>
+                <p className="text-xs font-mono text-terminal-green-dim">{selectedCase.description || 'No description provided.'}</p>
               </div>
 
               {!isReadOnly && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 font-mono">
                   {selectedCase.status !== 'IN_PROGRESS' && (
                     <button
                       onClick={() => handleUpdateStatus(selectedCase.id, 'IN_PROGRESS')}
-                      className="px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 text-xs font-semibold transition"
+                      className="px-3 py-1.5 rounded-lg bg-terminal-green-dark text-terminal-green border border-terminal-border text-xs font-bold hover:bg-terminal-border transition"
                     >
                       Set In Progress
                     </button>
@@ -422,14 +422,14 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
                   {selectedCase.status !== 'CLOSED' && (
                     <button
                       onClick={() => handleUpdateStatus(selectedCase.id, 'CLOSED')}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold transition"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 text-xs font-bold hover:bg-emerald-900/80 transition"
                     >
                       Close Case
                     </button>
                   )}
                   <button
                     onClick={() => setSelectedCase(null)}
-                    className="p-1.5 text-slate-400 hover:text-slate-200"
+                    className="p-1.5 text-terminal-green-dim hover:text-terminal-green"
                   >
                     <XCircle className="w-5 h-5" />
                   </button>
@@ -438,51 +438,51 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
             </div>
 
             {/* Sub-Navigation Tabs */}
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto">
+            <div className="flex items-center gap-2 border-b border-terminal-border pb-2 overflow-x-auto font-mono">
               <button
                 onClick={() => setActiveDetailTab('overview')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition ${activeDetailTab === 'overview' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition ${activeDetailTab === 'overview' ? 'bg-terminal-green-dark text-terminal-green border border-terminal-border glow-green' : 'text-terminal-green-dim hover:text-terminal-green'}`}
               >
                 Overview
               </button>
               <button
                 onClick={() => setActiveDetailTab('alerts')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition flex items-center gap-1.5 ${activeDetailTab === 'alerts' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 ${activeDetailTab === 'alerts' ? 'bg-terminal-green-dark text-terminal-green border border-terminal-border glow-green' : 'text-terminal-green-dim hover:text-terminal-green'}`}
               >
                 <AlertTriangle className="w-3.5 h-3.5" />
                 <span>Alerts ({selectedCase.alerts?.length || 0})</span>
               </button>
               <button
                 onClick={() => setActiveDetailTab('iocs')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition flex items-center gap-1.5 ${activeDetailTab === 'iocs' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 ${activeDetailTab === 'iocs' ? 'bg-terminal-green-dark text-terminal-green border border-terminal-border glow-green' : 'text-terminal-green-dim hover:text-terminal-green'}`}
               >
                 <Database className="w-3.5 h-3.5" />
                 <span>IOCs ({selectedCase.iocs?.length || 0})</span>
               </button>
               <button
                 onClick={() => setActiveDetailTab('cves')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition flex items-center gap-1.5 ${activeDetailTab === 'cves' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 ${activeDetailTab === 'cves' ? 'bg-terminal-green-dark text-terminal-green border border-terminal-border glow-green' : 'text-terminal-green-dim hover:text-terminal-green'}`}
               >
                 <FileCode className="w-3.5 h-3.5" />
                 <span>CVEs ({selectedCase.cves?.length || 0})</span>
               </button>
               <button
                 onClick={() => setActiveDetailTab('malware')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition flex items-center gap-1.5 ${activeDetailTab === 'malware' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 ${activeDetailTab === 'malware' ? 'bg-terminal-green-dark text-terminal-green border border-terminal-border glow-green' : 'text-terminal-green-dim hover:text-terminal-green'}`}
               >
                 <Shield className="w-3.5 h-3.5" />
                 <span>Malware ({selectedCase.malwareSamples?.length || 0})</span>
               </button>
               <button
                 onClick={() => setActiveDetailTab('timeline')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition flex items-center gap-1.5 ${activeDetailTab === 'timeline' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 ${activeDetailTab === 'timeline' ? 'bg-terminal-green-dark text-terminal-green border border-terminal-border glow-green' : 'text-terminal-green-dim hover:text-terminal-green'}`}
               >
                 <Clock className="w-3.5 h-3.5" />
                 <span>Audit Timeline ({timeline.length})</span>
               </button>
               <button
                 onClick={() => setActiveDetailTab('forensics')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition flex items-center gap-1.5 ${activeDetailTab === 'forensics' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 ${activeDetailTab === 'forensics' ? 'bg-terminal-green-dark text-terminal-green border border-terminal-border glow-green' : 'text-terminal-green-dim hover:text-terminal-green'}`}
               >
                 <FileSearch className="w-3.5 h-3.5" />
                 <span>Forensics ({forensicArtifacts.length})</span>
@@ -492,50 +492,50 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
             {/* TAB 1: OVERVIEW */}
             {activeDetailTab === 'overview' && (
               <div className="space-y-4 text-xs font-mono">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800">
-                    <span className="text-[10px] text-slate-500 block">CASE ID</span>
-                    <span className="text-slate-300 font-bold truncate block">{selectedCase.id}</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono">
+                  <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border">
+                    <span className="text-[10px] text-terminal-green-dim block">CASE ID</span>
+                    <span className="text-terminal-green font-bold truncate block">{selectedCase.id}</span>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800">
-                    <span className="text-[10px] text-slate-500 block">ASSIGNED ANALYST</span>
-                    <span className="text-slate-300 font-bold block">{selectedCase.assignedTo?.email || 'Unassigned'}</span>
+                  <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border">
+                    <span className="text-[10px] text-terminal-green-dim block">ASSIGNED ANALYST</span>
+                    <span className="text-terminal-green font-bold block">{selectedCase.assignedTo?.email || 'Unassigned'}</span>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800">
-                    <span className="text-[10px] text-slate-500 block">CREATED DATE</span>
-                    <span className="text-slate-300 font-bold block">{new Date(selectedCase.createdAt).toLocaleString()}</span>
+                  <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border">
+                    <span className="text-[10px] text-terminal-green-dim block">CREATED DATE</span>
+                    <span className="text-terminal-green font-bold block">{new Date(selectedCase.createdAt).toLocaleString()}</span>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-800">
-                    <span className="text-[10px] text-slate-500 block">LAST UPDATED</span>
-                    <span className="text-slate-300 font-bold block">{new Date(selectedCase.updatedAt).toLocaleString()}</span>
+                  <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border">
+                    <span className="text-[10px] text-terminal-green-dim block">LAST UPDATED</span>
+                    <span className="text-terminal-green font-bold block">{new Date(selectedCase.updatedAt).toLocaleString()}</span>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">INVESTIGATION SUMMARY & SCOPE</span>
-                  <p className="text-slate-200 font-sans text-xs leading-relaxed">{selectedCase.description || 'No detailed scope available.'}</p>
+                <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
+                  <span className="text-[10px] text-terminal-green-dim font-bold uppercase tracking-wider">INVESTIGATION SUMMARY & SCOPE</span>
+                  <p className="text-terminal-green font-mono text-xs leading-relaxed">{selectedCase.description || 'No detailed scope available.'}</p>
                 </div>
               </div>
             )}
 
             {/* TAB 2: LINKED ALERTS */}
             {activeDetailTab === 'alerts' && (
-              <div className="space-y-3">
+              <div className="space-y-3 font-mono">
                 {(!selectedCase.alerts || selectedCase.alerts.length === 0) ? (
-                  <div className="p-8 text-center text-slate-500 text-xs font-mono">No alerts linked to this case yet.</div>
+                  <div className="p-8 text-center text-terminal-muted text-xs font-mono">No alerts linked to this case yet.</div>
                 ) : (
                   selectedCase.alerts.map((alert: any) => (
-                    <div key={alert.id} className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2 text-xs font-mono">
+                    <div key={alert.id} className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 text-xs font-mono">
                       <div className="flex items-center justify-between">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getSeverityBadge(alert.severity)}`}>
                           {alert.severity}
                         </span>
-                        <span className="text-slate-500 text-[10px]">Status: {alert.status}</span>
+                        <span className="text-terminal-green-dim text-[10px]">Status: {alert.status}</span>
                       </div>
-                      <p className="text-slate-200 font-semibold font-sans">{alert.description}</p>
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-900">
+                      <p className="text-terminal-green font-semibold font-mono">{alert.description}</p>
+                      <div className="flex items-center justify-between text-[10px] text-terminal-green-dim pt-1 border-t border-terminal-border">
                         <span>Source: {alert.source}</span>
-                        {alert.sourceIoc && <span className="text-blue-400">IOC: {alert.sourceIoc.value}</span>}
+                        {alert.sourceIoc && <span className="text-terminal-green">IOC: {alert.sourceIoc.value}</span>}
                       </div>
                     </div>
                   ))
@@ -545,19 +545,19 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
 
             {/* TAB 3: LINKED IOCS */}
             {activeDetailTab === 'iocs' && (
-              <div className="space-y-3">
+              <div className="space-y-3 font-mono">
                 {(!selectedCase.iocs || selectedCase.iocs.length === 0) ? (
-                  <div className="p-8 text-center text-slate-500 text-xs font-mono">No direct IOCs linked to this case.</div>
+                  <div className="p-8 text-center text-terminal-muted text-xs font-mono">No direct IOCs linked to this case.</div>
                 ) : (
                   selectedCase.iocs.map((ioc: any) => (
-                    <div key={ioc.id} className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5 text-xs font-mono">
+                    <div key={ioc.id} className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-1.5 text-xs font-mono">
                       <div className="flex items-center justify-between">
-                        <span className="text-blue-400 font-bold text-sm">{ioc.value}</span>
-                        <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px]">
+                        <span className="text-terminal-green font-bold text-sm text-glow-green">{ioc.value}</span>
+                        <span className="px-2 py-0.5 rounded bg-terminal-green-dark text-terminal-green border border-terminal-border text-[10px]">
                           {ioc.type}
                         </span>
                       </div>
-                      <p className="text-slate-400 text-[10px]">Source: {ioc.source} • Geolocation: {ioc.city ? `${ioc.city}, ${ioc.country}` : 'Global/N/A'}</p>
+                      <p className="text-terminal-green-dim text-[10px]">Source: {ioc.source} • Geolocation: {ioc.city ? `${ioc.city}, ${ioc.country}` : 'Global/N/A'}</p>
                     </div>
                   ))
                 )}
@@ -566,19 +566,19 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
 
             {/* TAB 4: LINKED CVES */}
             {activeDetailTab === 'cves' && (
-              <div className="space-y-3">
+              <div className="space-y-3 font-mono">
                 {(!selectedCase.cves || selectedCase.cves.length === 0) ? (
-                  <div className="p-8 text-center text-slate-500 text-xs font-mono">No CVE vulnerabilities associated with this case.</div>
+                  <div className="p-8 text-center text-terminal-muted text-xs font-mono">No CVE vulnerabilities associated with this case.</div>
                 ) : (
                   selectedCase.cves.map((cve: any) => (
-                    <div key={cve.id || cve.cveId} className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2 text-xs font-mono">
+                    <div key={cve.id || cve.cveId} className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 text-xs font-mono">
                       <div className="flex items-center justify-between">
                         <span className="text-purple-400 font-bold text-sm">{cve.cveId}</span>
-                        <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 font-bold text-[10px]">
+                        <span className="px-2 py-0.5 rounded bg-red-950/80 text-red-400 border border-red-500/40 font-bold text-[10px]">
                           CVSS {cve.cvssScore ?? 'N/A'}
                         </span>
                       </div>
-                      <p className="text-slate-300 font-sans text-xs">{cve.description}</p>
+                      <p className="text-terminal-green font-mono text-xs">{cve.description}</p>
                     </div>
                   ))
                 )}
@@ -587,19 +587,19 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
 
             {/* TAB 5: LINKED MALWARE */}
             {activeDetailTab === 'malware' && (
-              <div className="space-y-3">
+              <div className="space-y-3 font-mono">
                 {(!selectedCase.malwareSamples || selectedCase.malwareSamples.length === 0) ? (
-                  <div className="p-8 text-center text-slate-500 text-xs font-mono">No malware samples linked to this case.</div>
+                  <div className="p-8 text-center text-terminal-muted text-xs font-mono">No malware samples linked to this case.</div>
                 ) : (
                   selectedCase.malwareSamples.map((m: any) => (
-                    <div key={m.id} className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5 text-xs font-mono">
+                    <div key={m.id} className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-1.5 text-xs font-mono">
                       <div className="flex items-center justify-between">
-                        <span className="text-cyan-300 font-bold text-sm">{m.name}</span>
-                        <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 text-[10px]">
+                        <span className="text-terminal-green font-bold text-sm text-glow-green">{m.name}</span>
+                        <span className="px-2 py-0.5 rounded bg-purple-950/80 text-purple-400 border border-purple-500/40 text-[10px]">
                           Family: {m.malwareFamily || 'Unknown'}
                         </span>
                       </div>
-                      <p className="text-slate-400 text-[10px]">SHA256: {m.hashSha256}</p>
+                      <p className="text-terminal-green-dim text-[10px]">SHA256: {m.hashSha256}</p>
                     </div>
                   ))
                 )}
@@ -611,40 +611,40 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
               <div className="space-y-4 text-xs font-mono">
                 {/* Notes Entry Form */}
                 {!isReadOnly && (
-                  <form onSubmit={handleAddNote} className="flex gap-2">
+                  <form onSubmit={handleAddNote} className="flex gap-2 font-mono">
                     <input
                       type="text"
                       placeholder="Add an investigation note to timeline..."
                       value={newNote}
                       onChange={(e) => setNewNote(e.target.value)}
-                      className="flex-1 bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-blue-500"
+                      className="flex-1 bg-[#050705] px-4 py-2.5 rounded-lg border border-terminal-border text-terminal-green text-xs focus:outline-none font-mono"
                     />
                     <button
                       type="submit"
                       disabled={sendingNote || !newNote.trim()}
-                      className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
+                      className="px-4 py-2.5 rounded-lg bg-terminal-green-dark hover:bg-terminal-border text-terminal-green font-bold flex items-center gap-2 transition disabled:opacity-50 font-mono border border-terminal-border"
                     >
-                      <Send className="w-3.5 h-3.5" />
+                      <Send className="w-3.5 h-3.5 text-terminal-green" />
                       <span>Note</span>
                     </button>
                   </form>
                 )}
 
                 {timelineLoading ? (
-                  <div className="p-8 text-center text-slate-500">Loading audit log timeline...</div>
+                  <div className="p-8 text-center text-terminal-muted font-mono">Loading audit log timeline...</div>
                 ) : timeline.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500">No audit log timeline entries recorded yet.</div>
+                  <div className="p-8 text-center text-terminal-muted font-mono">No audit log timeline entries recorded yet.</div>
                 ) : (
-                  <div className="relative pl-6 space-y-4 border-l-2 border-slate-800 my-4">
+                  <div className="relative pl-6 space-y-4 border-l-2 border-terminal-border my-4 font-mono">
                     {timeline.map((item) => (
-                      <div key={item.id} className="relative group">
-                        <div className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-slate-900"></div>
-                        <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1">
-                          <div className="flex items-center justify-between text-[10px] text-slate-400">
-                            <span className="text-blue-400 font-bold">{item.user?.email || 'System'}</span>
+                      <div key={item.id} className="relative group font-mono">
+                        <div className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-terminal-green border-2 border-black glow-green"></div>
+                        <div className="p-3 rounded-lg bg-[#050705] border border-terminal-border space-y-1">
+                          <div className="flex items-center justify-between text-[10px] text-terminal-green-dim">
+                            <span className="text-terminal-green font-bold">{item.user?.email || 'System'}</span>
                             <span>{new Date(item.timestamp).toLocaleString()}</span>
                           </div>
-                          <p className="text-slate-200 text-xs font-mono font-semibold">{item.action}</p>
+                          <p className="text-terminal-green text-xs font-mono font-semibold">{item.action}</p>
                         </div>
                       </div>
                     ))}
@@ -656,13 +656,13 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
             {/* TAB 7: DIGITAL FORENSICS & APPEND-ONLY CHAIN OF CUSTODY */}
             {activeDetailTab === 'forensics' && (
               <div className="space-y-4 text-xs font-mono">
-                <div className="flex items-center justify-between bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+                <div className="flex items-center justify-between bg-[#050705] p-4 rounded-lg border border-terminal-border">
                   <div>
-                    <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                      <Lock className="w-4 h-4 text-blue-400" />
+                    <h4 className="text-sm font-bold text-terminal-green flex items-center gap-2 text-glow-green">
+                      <Lock className="w-4 h-4 text-terminal-green" />
                       <span>Digital Forensics & Append-Only Custody Log</span>
                     </h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
+                    <p className="text-[11px] text-terminal-green-dim mt-0.5 font-mono">
                       Immutable forensic artifact registry with append-only chain-of-custody tracking.
                     </p>
                   </div>
@@ -670,55 +670,55 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
                   {canManageForensics ? (
                     <button
                       onClick={() => setShowArtifactModal(true)}
-                      className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg flex items-center gap-1.5 transition"
+                      className="px-3 py-1.5 rounded-lg bg-terminal-green-dark hover:bg-terminal-border text-terminal-green text-xs font-bold shadow-lg flex items-center gap-1.5 transition font-mono border border-terminal-border"
                     >
-                      <Plus className="w-3.5 h-3.5" />
+                      <Plus className="w-3.5 h-3.5 text-terminal-green" />
                       <span>Attach Artifact</span>
                     </button>
                   ) : (
-                    <span className="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold">
+                    <span className="px-2.5 py-1 rounded bg-yellow-950/80 border border-yellow-500/40 text-yellow-400 text-[10px] font-bold">
                       RBAC Restricted (Read-Only)
                     </span>
                   )}
                 </div>
 
                 {forensicsLoading ? (
-                  <div className="p-8 text-center text-slate-500">Loading forensic artifacts...</div>
+                  <div className="p-8 text-center text-terminal-muted font-mono">Loading forensic artifacts...</div>
                 ) : forensicArtifacts.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800/60">
+                  <div className="p-8 text-center text-terminal-muted bg-[#050705] rounded-lg border border-terminal-border font-mono">
                     No forensic artifacts attached to this case yet.
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-4 font-mono">
                     {forensicArtifacts.map((art) => (
-                      <div key={art.id} className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
-                        <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                      <div key={art.id} className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-3 font-mono">
+                        <div className="flex items-center justify-between border-b border-terminal-border pb-2">
                           <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-terminal-green-dark text-terminal-green border border-terminal-border">
                               {art.artifactType}
                             </span>
-                            <span className="text-slate-300 font-bold text-xs">Artifact ID: {art.id.slice(0, 8)}...</span>
+                            <span className="text-terminal-green font-bold text-xs">Artifact ID: {art.id.slice(0, 8)}...</span>
                           </div>
-                          <span className="text-[10px] text-slate-500">
-                            Collected by <strong className="text-slate-300">{art.collectedBy}</strong> on {new Date(art.collectedAt).toLocaleString()}
+                          <span className="text-[10px] text-terminal-green-dim">
+                            Collected by <strong className="text-terminal-green">{art.collectedBy}</strong> on {new Date(art.collectedAt).toLocaleString()}
                           </span>
                         </div>
 
                         {art.description && (
-                          <p className="text-slate-300 text-xs">{art.description}</p>
+                          <p className="text-terminal-green-dim text-xs font-mono">{art.description}</p>
                         )}
 
                         {art.hash && (
-                          <div className="p-2 rounded bg-slate-900 border border-slate-800 font-mono text-[11px] text-slate-400 flex items-center justify-between">
+                          <div className="p-2 rounded bg-[#050705] border border-terminal-border font-mono text-[11px] text-terminal-green-dim flex items-center justify-between">
                             <span>Hash Digest (Verification):</span>
-                            <span className="text-emerald-400 font-bold">{art.hash}</span>
+                            <span className="text-terminal-green font-bold text-glow-green">{art.hash}</span>
                           </div>
                         )}
 
                         {/* Chain of custody timeline */}
-                        <div className="pt-2">
+                        <div className="pt-2 font-mono">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            <span className="text-[11px] font-bold text-terminal-green-dim uppercase tracking-wider">
                               Chain of Custody History Trail ({Array.isArray(art.chainOfCustody) ? art.chainOfCustody.length : 0})
                             </span>
                             {canManageForensics && (
@@ -727,24 +727,24 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
                                   setSelectedArtifactForCustody(art);
                                   setShowCustodyModal(true);
                                 }}
-                                className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-blue-400 text-[10px] font-bold transition flex items-center gap-1 border border-slate-700"
+                                className="px-2 py-1 rounded bg-terminal-green-dark hover:bg-terminal-border text-terminal-green text-[10px] font-bold transition flex items-center gap-1 border border-terminal-border font-mono"
                               >
-                                <Plus className="w-3 h-3" />
+                                <Plus className="w-3 h-3 text-terminal-green" />
                                 <span>Append Custody Action</span>
                               </button>
                             )}
                           </div>
 
-                          <div className="relative pl-4 space-y-2 border-l-2 border-slate-800">
+                          <div className="relative pl-4 space-y-2 border-l-2 border-terminal-border">
                             {Array.isArray(art.chainOfCustody) && art.chainOfCustody.map((cEntry: any, idx: number) => (
-                              <div key={idx} className="relative text-[11px]">
-                                <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-blue-400 border border-slate-900"></div>
-                                <div className="p-2 rounded bg-slate-900/60 border border-slate-800/60 flex items-center justify-between gap-2">
+                              <div key={idx} className="relative text-[11px] font-mono">
+                                <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-terminal-green border border-black glow-green"></div>
+                                <div className="p-2 rounded bg-[#050705] border border-terminal-border flex items-center justify-between gap-2">
                                   <div>
-                                    <span className="text-blue-400 font-bold">{cEntry.user}</span>
-                                    <span className="text-slate-300 ml-2">{cEntry.action}</span>
+                                    <span className="text-terminal-green font-bold">{cEntry.user}</span>
+                                    <span className="text-terminal-green-dim ml-2">{cEntry.action}</span>
                                   </div>
-                                  <span className="text-slate-500 text-[10px] shrink-0">{new Date(cEntry.timestamp).toLocaleString()}</span>
+                                  <span className="text-terminal-muted text-[10px] shrink-0">{new Date(cEntry.timestamp).toLocaleString()}</span>
                                 </div>
                               </div>
                             ))}
@@ -758,74 +758,74 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
             )}
           </div>
         ) : (
-          <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800/60 rounded-2xl p-12 text-center text-slate-500 font-mono text-xs flex flex-col items-center justify-center min-h-[400px]">
-            <Briefcase className="w-12 h-12 text-slate-700 mb-3" />
-            <p className="text-slate-300 font-bold text-sm">No Case Selected</p>
-            <p className="text-slate-500 mt-1 max-w-sm">Select an investigation case from the list on the left to inspect linked alerts, IOCs, CVEs, malware, and audit log history.</p>
+          <div className="lg:col-span-2 bg-[#050705] border border-terminal-border rounded-xl p-12 text-center text-terminal-muted font-mono text-xs flex flex-col items-center justify-center min-h-[400px]">
+            <Briefcase className="w-12 h-12 text-terminal-border mb-3" />
+            <p className="text-terminal-green font-bold text-sm text-glow-green">No Case Selected</p>
+            <p className="text-terminal-green-dim mt-1 max-w-sm font-mono">Select an investigation case from the list on the left to inspect linked alerts, IOCs, CVEs, malware, and audit log history.</p>
           </div>
         )}
       </div>
 
       {/* Create Case Modal */}
       {showCreateModal && !isReadOnly && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-slate-100 font-mono">Create Security Case</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-200">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="soc-card border border-terminal-border rounded-xl max-w-md w-full p-6 space-y-5 shadow-2xl bg-[#0a0f0a] font-mono">
+            <div className="flex items-center justify-between border-b border-terminal-border pb-3">
+              <h3 className="text-sm font-bold text-terminal-green uppercase font-mono text-glow-green">Create Security Case</h3>
+              <button onClick={() => setShowCreateModal(false)} className="text-terminal-green-dim hover:text-terminal-green">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateCase} className="space-y-4 text-xs font-mono">
               <div>
-                <label className="block text-slate-400 mb-1">Case Title</label>
+                <label className="block text-terminal-green-dim mb-1">Case Title</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. APT29 Spear-phishing Campaign"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Case Description</label>
+                <label className="block text-terminal-green-dim mb-1">Case Description</label>
                 <textarea
                   rows={3}
                   placeholder="Detailed description of threat scope..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Severity Rating</label>
+                <label className="block text-terminal-green-dim mb-1">Severity Rating</label>
                 <select
                   value={newSeverity}
                   onChange={(e) => setNewSeverity(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none"
+                  className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                 >
-                  <option value="CRITICAL">CRITICAL</option>
-                  <option value="HIGH">HIGH</option>
-                  <option value="MEDIUM">MEDIUM</option>
-                  <option value="LOW">LOW</option>
+                  <option value="CRITICAL" className="bg-[#050705]">CRITICAL</option>
+                  <option value="HIGH" className="bg-[#050705]">HIGH</option>
+                  <option value="MEDIUM" className="bg-[#050705]">MEDIUM</option>
+                  <option value="LOW" className="bg-[#050705]">LOW</option>
                 </select>
               </div>
 
-              <div className="pt-3 flex gap-3">
+              <div className="pt-3 flex gap-3 font-mono">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+                  className="flex-1 py-2.5 rounded bg-terminal-surface text-terminal-green-dim font-bold hover:bg-terminal-border transition border border-terminal-border"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition shadow-lg shadow-blue-600/20"
+                  className="flex-1 py-2.5 rounded bg-terminal-green-dark hover:bg-terminal-border text-terminal-green font-bold transition border border-terminal-border"
                 >
                   Create Case
                 </button>
@@ -837,74 +837,74 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
 
       {/* Attach Artifact Modal */}
       {showArtifactModal && canManageForensics && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-slate-100 font-mono">Attach Forensic Artifact</h3>
-              <button onClick={() => setShowArtifactModal(false)} className="text-slate-400 hover:text-slate-200">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="soc-card border border-terminal-border rounded-xl max-w-md w-full p-6 space-y-5 shadow-2xl bg-[#0a0f0a] font-mono">
+            <div className="flex items-center justify-between border-b border-terminal-border pb-3">
+              <h3 className="text-sm font-bold text-terminal-green uppercase font-mono text-glow-green">Attach Forensic Artifact</h3>
+              <button onClick={() => setShowArtifactModal(false)} className="text-terminal-green-dim hover:text-terminal-green">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleAddArtifact} className="space-y-4 text-xs font-mono">
               <div>
-                <label className="block text-slate-400 mb-1">Artifact Type</label>
+                <label className="block text-terminal-green-dim mb-1">Artifact Type</label>
                 <select
                   value={artifactType}
                   onChange={(e) => setArtifactType(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none"
+                  className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                 >
-                  <option value="LOG_FILE">LOG_FILE</option>
-                  <option value="MEMORY_DUMP_META">MEMORY_DUMP_META</option>
-                  <option value="NETWORK_CAPTURE_META">NETWORK_CAPTURE_META</option>
-                  <option value="FILE_METADATA">FILE_METADATA</option>
+                  <option value="LOG_FILE" className="bg-[#050705]">LOG_FILE</option>
+                  <option value="MEMORY_DUMP_META" className="bg-[#050705]">MEMORY_DUMP_META</option>
+                  <option value="NETWORK_CAPTURE_META" className="bg-[#050705]">NETWORK_CAPTURE_META</option>
+                  <option value="FILE_METADATA" className="bg-[#050705]">FILE_METADATA</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Description / Metadata</label>
+                <label className="block text-terminal-green-dim mb-1">Description / Metadata</label>
                 <textarea
                   rows={3}
                   placeholder="Details of artifact acquisition, file path, source host..."
                   value={artifactDesc}
                   onChange={(e) => setArtifactDesc(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Cryptographic Hash (SHA256 / MD5)</label>
+                <label className="block text-terminal-green-dim mb-1">Cryptographic Hash (SHA256 / MD5)</label>
                 <input
                   type="text"
                   placeholder="e.g. e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
                   value={artifactHash}
                   onChange={(e) => setArtifactHash(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Initial Chain of Custody Action</label>
+                <label className="block text-terminal-green-dim mb-1">Initial Chain of Custody Action</label>
                 <input
                   type="text"
                   required
                   value={initialAction}
                   onChange={(e) => setInitialAction(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                 />
               </div>
 
-              <div className="pt-3 flex gap-3">
+              <div className="pt-3 flex gap-3 font-mono">
                 <button
                   type="button"
                   onClick={() => setShowArtifactModal(false)}
-                  className="flex-1 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+                  className="flex-1 py-2.5 rounded bg-terminal-surface text-terminal-green-dim font-bold hover:bg-terminal-border transition border border-terminal-border"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition shadow-lg shadow-blue-600/20"
+                  className="flex-1 py-2.5 rounded bg-terminal-green-dark hover:bg-terminal-border text-terminal-green font-bold transition border border-terminal-border"
                 >
                   Save Artifact
                 </button>
@@ -916,44 +916,44 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
 
       {/* Append Custody Action Modal */}
       {showCustodyModal && canManageForensics && selectedArtifactForCustody && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-slate-100 font-mono">Append Chain of Custody Action</h3>
-              <button onClick={() => setShowCustodyModal(false)} className="text-slate-400 hover:text-slate-200">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="soc-card border border-terminal-border rounded-xl max-w-md w-full p-6 space-y-5 shadow-2xl bg-[#0a0f0a] font-mono">
+            <div className="flex items-center justify-between border-b border-terminal-border pb-3">
+              <h3 className="text-sm font-bold text-terminal-green uppercase font-mono text-glow-green">Append Chain of Custody Action</h3>
+              <button onClick={() => setShowCustodyModal(false)} className="text-terminal-green-dim hover:text-terminal-green">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleAppendCustody} className="space-y-4 text-xs font-mono">
-              <div className="p-3 rounded bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-500 block">TARGET ARTIFACT</span>
-                <span className="text-slate-200 font-bold text-xs">{selectedArtifactForCustody.artifactType} ({selectedArtifactForCustody.id.slice(0, 8)}...)</span>
+              <div className="p-3 rounded bg-[#050705] border border-terminal-border font-mono">
+                <span className="text-[10px] text-terminal-green-dim block">TARGET ARTIFACT</span>
+                <span className="text-terminal-green font-bold text-xs">{selectedArtifactForCustody.artifactType} ({selectedArtifactForCustody.id.slice(0, 8)}...)</span>
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Custody Action Description</label>
+                <label className="block text-terminal-green-dim mb-1">Custody Action Description</label>
                 <textarea
                   rows={3}
                   required
                   placeholder="e.g. Transferred memory dump copy to forensic workstation B for volatility analysis"
                   value={custodyActionText}
                   onChange={(e) => setCustodyActionText(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                 />
               </div>
 
-              <div className="pt-3 flex gap-3">
+              <div className="pt-3 flex gap-3 font-mono">
                 <button
                   type="button"
                   onClick={() => setShowCustodyModal(false)}
-                  className="flex-1 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition"
+                  className="flex-1 py-2.5 rounded bg-terminal-surface text-terminal-green-dim font-bold hover:bg-terminal-border transition border border-terminal-border"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition shadow-lg shadow-blue-600/20"
+                  className="flex-1 py-2.5 rounded bg-terminal-green-dark hover:bg-terminal-border text-terminal-green font-bold transition border border-terminal-border"
                 >
                   Append Action
                 </button>

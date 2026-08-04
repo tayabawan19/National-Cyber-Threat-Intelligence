@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -12,6 +13,7 @@ import { GetUser } from '../common/decorators/get-user.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('login')
   @ApiOperation({ summary: 'Authenticate user & issue JWT tokens' })
   @ApiResponse({ status: 200, description: 'Login successful' })

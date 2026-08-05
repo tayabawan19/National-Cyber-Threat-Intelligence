@@ -38,7 +38,7 @@ export const LoginPage: React.FC = () => {
       {/* Main Split Container */}
       <div className="w-full max-w-6xl mx-auto relative z-10 font-mono flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 px-4">
         {/* Left Side: SOC Platform Branding & Telemetry (Over Shield Backdrop) */}
-        <div className="hidden lg:flex flex-col max-w-md space-y-6 text-left">
+        <div className="hidden lg:flex flex-col max-w-md space-y-6 text-left p-6 rounded-2xl bg-[#070c07]/85 border border-terminal-border/60 backdrop-blur-md shadow-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-terminal-surface border border-terminal-border text-xs text-terminal-green w-fit shadow-md">
             <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
             <span className="font-bold font-mono">CTIP-SEC-NODE-01 // ACTIVE</span>

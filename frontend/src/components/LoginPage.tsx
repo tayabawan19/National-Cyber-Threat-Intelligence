@@ -77,11 +77,11 @@ export const LoginPage: React.FC = () => {
           <div className="inline-flex items-center justify-center p-3 rounded-xl bg-terminal-surface border border-terminal-border mb-3 shadow-xl text-terminal-green text-glow-green">
             <Terminal className="w-8 h-8 text-terminal-green" />
           </div>
-          <h1 className="text-xl font-bold text-terminal-green text-glow-green tracking-tight flex items-center justify-center gap-2 font-mono">
-            <span>ctip-sec-node-01:~# auth</span>
+          <h1 className="text-lg font-extrabold text-terminal-green text-glow-green tracking-tight flex items-center justify-center gap-2 font-mono uppercase">
+            <span>CYBER THREAT OPERATIONS CELL</span>
           </h1>
-          <p className="text-[11px] uppercase tracking-widest text-terminal-green-dim font-mono mt-1">
-            NATIONAL CYBER THREAT OPERATIONS CELL
+          <p className="text-[10px] uppercase tracking-widest text-terminal-green-dim font-mono mt-1">
+            SECURITY OPERATIONS CENTER ACCESS PORTAL
           </p>
         </div>
 
@@ -90,11 +90,12 @@ export const LoginPage: React.FC = () => {
           {/* Header Box motif */}
           <div className="flex items-center justify-between border-b border-terminal-border pb-3">
             <div className="flex items-center gap-2">
-              <span className="text-terminal-green text-xs font-bold font-mono">┌─[ SYSTEM_AUTHENTICATION ]</span>
+              <Shield className="w-4 h-4 text-terminal-green" />
+              <span className="text-terminal-green text-xs font-bold font-mono">ANALYST AUTHENTICATION PORTAL</span>
             </div>
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-terminal-green-dark text-terminal-green border border-terminal-border">
               <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
-              ONLINE
+              ACTIVE PORT
             </span>
           </div>
 
@@ -117,8 +118,8 @@ export const LoginPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4 text-xs font-mono">
             <div>
               <label className="block text-[11px] font-mono text-terminal-green-dim uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                <span>user@ctip-sec:~$ input_email</span>
-                <span className="text-[10px] text-terminal-muted">[REQ]</span>
+                <span>ANALYST EMAIL ADDRESS</span>
+                <span className="text-[10px] text-terminal-muted">[REQUIRED]</span>
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-terminal-green-dim absolute left-3.5 top-3" />
@@ -135,7 +136,7 @@ export const LoginPage: React.FC = () => {
 
             <div>
               <label className="block text-[11px] font-mono text-terminal-green-dim uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                <span>user@ctip-sec:~$ input_passphrase</span>
+                <span>AUTHENTICATION PASSPHRASE</span>
                 <span className="text-[10px] text-terminal-muted">[ENCRYPTED]</span>
               </label>
               <div className="relative">
@@ -199,7 +200,7 @@ export const LoginPage: React.FC = () => {
         {/* Footer info */}
         <p className="text-center text-[10px] text-terminal-green-dim mt-4 font-mono flex items-center justify-center gap-1">
           <Activity className="w-3 h-3 text-terminal-green" />
-          <span>CLASSIFIED SYSTEM • PROMPT: root@ctip-sec-01:~#</span>
+          <span>RESTRICTED SOC SYSTEM • ALL SESSION ACTIONS MONITORED & AUDITED</span>
         </p>
       </div>
     </div>

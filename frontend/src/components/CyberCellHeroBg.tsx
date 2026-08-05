@@ -12,7 +12,7 @@ export const CyberCellHeroBg: React.FC<CyberCellHeroBgProps> = ({
   className = '',
 }) => {
   const isHeader = variant === 'header';
-  const centerX = isHeader ? 600 : (align === 'left' ? 180 : 600);
+  const centerX = isHeader ? 600 : (align === 'left' ? 580 : 600);
 
   return (
     <div
@@ -215,9 +215,9 @@ export const CyberCellHeroBg: React.FC<CyberCellHeroBgProps> = ({
 
         {/* 5. Layer 3: Central Focal Point - Glowing Cyber Shield & Security Lock Emblem */}
         <g
-          transform={isHeader ? 'translate(600, 230) scale(0.65)' : `translate(${centerX}, 260) scale(0.85)`}
+          transform={isHeader ? 'translate(600, 230) scale(0.65)' : `translate(${centerX}, 250) scale(1.05)`}
           style={{ transformOrigin: 'center' }}
-          opacity={align === 'left' ? '0.35' : '1'}
+          opacity="1"
         >
           {/* Outer Shield Hexagon Ring */}
           <polygon

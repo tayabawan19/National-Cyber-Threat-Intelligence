@@ -2,14 +2,17 @@ import React from 'react';
 
 interface CyberCellHeroBgProps {
   variant?: 'full' | 'header';
+  align?: 'left' | 'center';
   className?: string;
 }
 
 export const CyberCellHeroBg: React.FC<CyberCellHeroBgProps> = ({
   variant = 'full',
+  align = 'left',
   className = '',
 }) => {
   const isHeader = variant === 'header';
+  const centerX = isHeader ? 600 : (align === 'left' ? 320 : 600);
 
   return (
     <div
@@ -87,7 +90,7 @@ export const CyberCellHeroBg: React.FC<CyberCellHeroBgProps> = ({
         <rect width="1200" height="600" fill="#050705" />
 
         {/* 2. Central Glow Aura */}
-        <circle cx="600" cy="270" r="380" fill="url(#heroGlowGrad)" />
+        <circle cx={centerX} cy="270" r="380" fill="url(#heroGlowGrad)" />
 
         {/* 3. Layer 1: Distant City Skyline Silhouette (Bottom Edge) */}
         {/* Rendered as dark polygon shapes, slightly darker than base, backlit by glow */}
@@ -212,7 +215,7 @@ export const CyberCellHeroBg: React.FC<CyberCellHeroBgProps> = ({
 
         {/* 5. Layer 3: Central Focal Point - Glowing Cyber Shield & Security Lock Emblem */}
         <g
-          transform={isHeader ? 'translate(600, 230) scale(0.65)' : 'translate(600, 250) scale(1.15)'}
+          transform={isHeader ? 'translate(600, 230) scale(0.65)' : `translate(${centerX}, 250) scale(1.15)`}
           style={{ transformOrigin: 'center' }}
         >
           {/* Outer Shield Hexagon Ring */}

@@ -30,13 +30,48 @@ export const LoginPage: React.FC = () => {
       <MatrixRainBg opacity={0.35} />
 
       {/* Generative Cyber Cell Hero Background (Skyline, Shield, Network Web) */}
-      <CyberCellHeroBg variant="full" />
+      <CyberCellHeroBg variant="full" align="left" />
 
       {/* CRT Scanline Overlay */}
       <div className="fixed inset-0 bg-crt-scanlines pointer-events-none z-50 opacity-40" />
 
-      {/* Main Container */}
-      <div className="w-full max-w-md relative z-10 font-mono">
+      {/* Main Split Container */}
+      <div className="w-full max-w-6xl mx-auto relative z-10 font-mono flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 px-4">
+        {/* Left Side: SOC Platform Branding & Telemetry (Over Shield Backdrop) */}
+        <div className="hidden lg:flex flex-col max-w-md space-y-6 text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-terminal-surface border border-terminal-border text-xs text-terminal-green w-fit shadow-md">
+            <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
+            <span className="font-bold font-mono">CTIP-SEC-NODE-01 // ACTIVE</span>
+          </div>
+
+          <h1 className="text-3xl font-extrabold text-terminal-green text-glow-green tracking-tight leading-tight">
+            NATIONAL CYBER THREAT OPERATIONS CELL
+          </h1>
+
+          <p className="text-xs text-terminal-green-dim leading-relaxed">
+            Enterprise AI-assisted Security Operations Center platform for real-time threat feed aggregation, multi-condition rule detection, malware correlation, and digital forensics chain of custody.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 pt-2 text-[11px]">
+            <div className="p-3 rounded-lg bg-[#050705]/80 border border-terminal-border flex items-center gap-2.5 shadow-lg">
+              <Activity className="w-4 h-4 text-terminal-green shrink-0" />
+              <div>
+                <p className="text-terminal-green font-bold">LIVE FEEDS</p>
+                <p className="text-[10px] text-terminal-muted">OTX, NVD, abuse.ch</p>
+              </div>
+            </div>
+            <div className="p-3 rounded-lg bg-[#050705]/80 border border-terminal-border flex items-center gap-2.5 shadow-lg">
+              <Shield className="w-4 h-4 text-terminal-green shrink-0" />
+              <div>
+                <p className="text-terminal-green font-bold">CHAIN OF CUSTODY</p>
+                <p className="text-[10px] text-terminal-muted">Immutable Forensics</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Login Box */}
+        <div className="w-full max-w-md">
         {/* Logo & Terminal Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center p-3 rounded-xl bg-terminal-surface border border-terminal-border mb-3 shadow-xl text-terminal-green text-glow-green">
@@ -168,5 +203,6 @@ export const LoginPage: React.FC = () => {
         </p>
       </div>
     </div>
-  );
+  </div>
+);
 };

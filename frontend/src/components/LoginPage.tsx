@@ -77,11 +77,12 @@ export const LoginPage: React.FC = () => {
           <div className="inline-flex items-center justify-center p-3 rounded-xl bg-terminal-surface border border-terminal-border mb-3 shadow-xl text-terminal-green text-glow-green">
             <Terminal className="w-8 h-8 text-terminal-green" />
           </div>
-          <h1 className="text-lg font-extrabold text-terminal-green text-glow-green tracking-tight flex items-center justify-center gap-2 font-mono uppercase">
-            <span>CYBER THREAT OPERATIONS CELL</span>
+          <h1 className="text-xl font-bold text-terminal-green text-glow-green tracking-tight flex items-center justify-center gap-1 font-mono">
+            <span>root@ctip-sec-node-01:~#</span>
+            <span className="animate-pulse text-terminal-green font-bold font-mono text-glow-green">_</span>
           </h1>
-          <p className="text-[10px] uppercase tracking-widest text-terminal-green-dim font-mono mt-1">
-            SECURITY OPERATIONS CENTER ACCESS PORTAL
+          <p className="text-[11px] uppercase tracking-widest text-terminal-green-dim font-mono mt-1">
+            NATIONAL CYBER THREAT OPERATIONS CELL
           </p>
         </div>
 

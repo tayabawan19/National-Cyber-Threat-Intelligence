@@ -23,7 +23,7 @@ async function runPhase8Verification() {
     console.log('📌 [PART 1] STATISTICAL ANOMALY DETECTION ENGINE (Z-SCORE)');
     console.log('   Algorithm: Z = (x - mean) / stdDev (Configurable Threshold >= 2.5)\n');
 
-    // Upsert 3 Real Statistical Anomaly Detection Rules
+    // Upsert 3 Real Statistical Anomaly Detection Rules with distinct metrics & entity types
     const rule1 = await prisma.detectionRule.upsert({
       where: { name: 'Live AlienVault OTX Ingestion Spike Anomaly' },
       update: {
@@ -113,6 +113,13 @@ async function runPhase8Verification() {
       },
     });
 
+    // Delete existing old test alerts for these 3 rules to verify new distinct numbers
+    await prisma.alert.deleteMany({
+      where: {
+        ruleId: { in: [rule1.id, rule2.id, rule3.id] },
+      },
+    });
+
     const realIocCount = await prisma.ioc.count();
     const realCveCount = await prisma.cve.count();
     console.log(`   Real Feed Ingested Data in DB: ${realIocCount} IOCs, ${realCveCount} CVEs`);
@@ -120,7 +127,7 @@ async function runPhase8Verification() {
     // Run Statistical Anomaly evaluation against real ingested data
     const evalResults = await detectionEngine.evaluateStatisticalAnomalyRules();
 
-    // Fetch all triggered STATISTICAL_ANOMALY alerts from database
+    // Fetch newly generated STATISTICAL_ANOMALY alerts from database
     const anomalyAlerts = await prisma.alert.findMany({
       where: {
         ruleId: { in: [rule1.id, rule2.id, rule3.id] },
@@ -137,12 +144,11 @@ async function runPhase8Verification() {
       console.log(`   🚨 [ANOMALY TRIGGER #${anomalyIndex}] Alert ID #${alert.id.slice(0, 8)}`);
       console.log(`      Rule: '${alert.rule?.name || alert.description.slice(0, 45)}'`);
       console.log(`      Description: ${alert.description}`);
-      console.log(`      Severity: ${alert.severity} | Threat Score: ${alert.score}/10.0`);
-      console.log(`      Details: ${JSON.stringify((alert as any).details || alert.rule?.condition)}\n`);
+      console.log(`      Severity: ${alert.severity} | Threat Score: ${alert.score}/10.0\n`);
       anomalyIndex++;
     }
 
-    if (anomalyAlerts.length >= 3 || evalResults.length >= 3) {
+    if (anomalyAlerts.length >= 3) {
       console.log('   ✅ PART 1 PASSED: 3/3 Real Z-Score Anomaly Alerts Generated & Verified in PostgreSQL!\n');
       passedTests++;
     } else {
@@ -150,9 +156,9 @@ async function runPhase8Verification() {
     }
 
     // -------------------------------------------------------------------------
-    // PART 2: Honest Post-Phase 7 Load Testing Benchmark (concurrency 5, 15, 30)
+    // PART 2: Honest Post-Phase 7 Load Testing Benchmark with Status Breakdown
     // -------------------------------------------------------------------------
-    console.log('📌 [PART 2] HONEST POST-PHASE 7 LOAD TEST BENCHMARK');
+    console.log('📌 [PART 2] HONEST POST-PHASE 7 LOAD TEST BENCHMARK WITH ERROR DIAGNOSTICS');
     console.log('   Target Endpoints: GET /api/alerts, GET /api/iocs/search, POST /api/auth/login\n');
 
     const baseUrl = 'http://localhost:3000/api';
@@ -164,19 +170,12 @@ async function runPhase8Verification() {
         password: 'AdminSecurePass123!',
       });
       token = loginRes.data.accessToken || loginRes.data.access_token || loginRes.data.token;
-      console.log('   🔑 Auth Token Retrieved Successfully for Load Test.\n');
+      console.log(`   🔑 Auth Token Retrieved Successfully for Load Test.\n`);
     } catch (err: any) {
       console.warn('   ⚠️ Could not log in for load test:', err.message);
     }
 
     if (token) {
-      console.log(`   🔑 Auth Token Retrieved: ${token.slice(0, 20)}...`);
-      try {
-        const testRes = await axios.get(`${baseUrl}/alerts?limit=20`, { headers: { Authorization: `Bearer ${token}` } });
-        console.log(`   [TEST GET /alerts] Status: ${testRes.status} OK (Total alerts: ${testRes.data?.data?.length || testRes.data?.length || 0})`);
-      } catch (e: any) {
-        console.error(`   [TEST GET /alerts ERROR] Status: ${e.response?.status} - ${JSON.stringify(e.response?.data || e.message)}`);
-      }
       const runBenchmarkEndpoint = async (
         name: string,
         url: string,
@@ -186,12 +185,13 @@ async function runPhase8Verification() {
         totalRequests: number = 30,
       ) => {
         console.log(`   ⚡ Testing Endpoint: ${name}`);
-        console.log(`   -----------------------------------------------------------------`);
-        console.log(`   Concurrency | Requests | req/sec | Median Latency | p95 Latency | Error Rate`);
-        console.log(`   -----------------------------------------------------------------`);
+        console.log(`   ---------------------------------------------------------------------------------------------------`);
+        console.log(`   Concurrency | Requests | req/sec | Median Latency | p95 Latency | Error Rate | Status Code Breakdown`);
+        console.log(`   ---------------------------------------------------------------------------------------------------`);
 
         for (const concurrency of concurrencyLevels) {
           const latencies: number[] = [];
+          const statusCounts: Record<string, number> = {};
           let errors = 0;
           const startTime = Date.now();
 
@@ -203,14 +203,18 @@ async function runPhase8Verification() {
               const reqStart = Date.now();
               const reqPromise = (
                 method === 'GET'
-                  ? axios.get(url, { headers: { Authorization: `Bearer ${token}` }, timeout: 10000 })
-                  : axios.post(url, dataPayload, { headers: { Authorization: `Bearer ${token}` }, timeout: 10000 })
+                  ? axios.get(url, { headers: { Authorization: `Bearer ${token}` }, timeout: 5000 })
+                  : axios.post(url, dataPayload, { headers: { Authorization: `Bearer ${token}` }, timeout: 5000 })
               )
-                .then(() => {
+                .then((res) => {
                   latencies.push(Date.now() - reqStart);
+                  const code = res.status.toString();
+                  statusCounts[code] = (statusCounts[code] || 0) + 1;
                 })
-                .catch(() => {
+                .catch((err) => {
                   errors++;
+                  const code = err.response ? err.response.status.toString() : 'ERR_CONN';
+                  statusCounts[code] = (statusCounts[code] || 0) + 1;
                 });
               promises.push(reqPromise);
             }
@@ -225,11 +229,15 @@ async function runPhase8Verification() {
           const p95 = latencies.length > 0 ? latencies[Math.floor(latencies.length * 0.95)] : 0;
           const errorRate = totalExecuted > 0 ? ((errors / totalExecuted) * 100).toFixed(2) : '0.00';
 
+          const breakdownStr = Object.entries(statusCounts)
+            .map(([code, count]) => (code === '429' ? `429 (Rate Limited): ${count}` : code === '200' ? `200 OK: ${count}` : `${code}: ${count}`))
+            .join(', ');
+
           console.log(
-            `   ${concurrency.toString().padEnd(12)} | ${totalExecuted.toString().padEnd(8)} | ${rps.padEnd(7)} | ${(median + 'ms').padEnd(14)} | ${(p95 + 'ms').padEnd(11)} | ${errorRate}%`,
+            `   ${concurrency.toString().padEnd(12)} | ${totalExecuted.toString().padEnd(8)} | ${rps.padEnd(7)} | ${(median + 'ms').padEnd(14)} | ${(p95 + 'ms').padEnd(11)} | ${(errorRate + '%').padEnd(10)} | ${breakdownStr}`,
           );
         }
-        console.log(`   -----------------------------------------------------------------\n`);
+        console.log(`   ---------------------------------------------------------------------------------------------------\n`);
       };
 
       // 1. GET /api/alerts benchmark
@@ -262,7 +270,7 @@ async function runPhase8Verification() {
         10,
       );
 
-      console.log('   ✅ PART 2 PASSED: Real Post-Phase 7 Load Test Benchmark Complete!\n');
+      console.log('   ✅ PART 2 PASSED: Real Post-Phase 7 Load Test Benchmark & Error Status Breakdown Complete!\n');
       passedTests++;
     }
 

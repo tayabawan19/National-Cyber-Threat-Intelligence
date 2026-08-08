@@ -1,27 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Plus, ToggleLeft, ToggleRight, AlertTriangle, Layers, GitBranch, Cpu, ShieldCheck } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Settings, Shield, Plus, ToggleLeft, ToggleRight, GitBranch, Zap, Activity } from 'lucide-react';
 
-interface DetectionRulesViewProps {
-  token: string;
-  userRole?: string;
+interface Rule {
+  id: string;
+  name: string;
+  description: string;
+  correlationType: 'SIMPLE' | 'MULTI_CONDITION' | 'THRESHOLD' | 'CORRELATION' | 'STATISTICAL_ANOMALY';
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  enabled: boolean;
+  condition: any;
 }
 
-export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, userRole }) => {
-  const [rules, setRules] = useState<any[]>([]);
+export const DetectionRulesView: React.FC = () => {
+  const { token, userRole } = useAuth();
+  const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  // New Rule Form State
+  // Form State
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [severity, setSeverity] = useState<'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'>('HIGH');
-  const [correlationType, setCorrelationType] = useState<'SIMPLE' | 'MULTI_CONDITION' | 'THRESHOLD' | 'CORRELATION'>('MULTI_CONDITION');
+  const [correlationType, setCorrelationType] = useState<'SIMPLE' | 'MULTI_CONDITION' | 'THRESHOLD' | 'CORRELATION' | 'STATISTICAL_ANOMALY'>('STATISTICAL_ANOMALY');
+  const [severity, setSeverity] = useState<'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'>('HIGH');
+  
+  // Custom Condition Inputs
   const [logicalOperator, setLogicalOperator] = useState<'AND' | 'OR'>('AND');
-  const [tagInput, setTagInput] = useState('botnet, c2');
+  const [tagInput, setTagInput] = useState('');
   const [thresholdCount, setThresholdCount] = useState(3);
+  
+  // Statistical Anomaly Z-Score Inputs
+  const [zThreshold, setZThreshold] = useState(2.5);
+  const [windowMinutes, setWindowMinutes] = useState(10);
+  const [anomalyMetric, setAnomalyMetric] = useState<'IOC_FREQUENCY' | 'CVSS_DISTRIBUTION' | 'ALERT_FREQUENCY'>('IOC_FREQUENCY');
 
-  const isReadOnly = userRole === 'READ_ONLY';
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+
+  // RBAC Permission Check
+  const isReadOnly = userRole === 'READ_ONLY';
 
   const fetchRules = async () => {
     setLoading(true);
@@ -32,7 +48,7 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
       const data = await res.json();
       setRules(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Failed to fetch detection rules', err);
+      console.error('Error fetching rules:', err);
     } finally {
       setLoading(false);
     }
@@ -42,58 +58,73 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
     fetchRules();
   }, [token]);
 
-  const handleToggleRule = async (ruleId: string, currentEnabled: boolean) => {
+  const handleToggleRule = async (ruleId: string, currentStatus: boolean) => {
     if (isReadOnly) return;
     try {
       await fetch(`${API_BASE_URL}/detection-rules/${ruleId}`, {
         method: 'PATCH',
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ enabled: !currentEnabled }),
+        body: JSON.stringify({ enabled: !currentStatus }),
       });
       fetchRules();
     } catch (err) {
-      console.error('Failed to toggle rule state', err);
+      console.error('Error toggling rule:', err);
     }
   };
 
   const handleCreateRule = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isReadOnly || !name.trim()) return;
+    if (isReadOnly) return;
 
-    let conditionPayload: any = {};
-    if (correlationType === 'MULTI_CONDITION') {
-      const tagsList = tagInput.split(',').map((t) => t.trim()).filter(Boolean);
-      conditionPayload = {
+    let condition: any = {};
+
+    if (correlationType === 'STATISTICAL_ANOMALY') {
+      condition = {
+        type: 'STATISTICAL_ANOMALY',
+        metric: anomalyMetric,
+        zThreshold: Number(zThreshold),
+        windowMinutes: Number(windowMinutes),
+      };
+    } else if (correlationType === 'MULTI_CONDITION') {
+      const tags = tagInput.split(',').map((t) => t.trim()).filter(Boolean);
+      condition = {
         logicalOperator,
-        conditions: [
-          { type: 'MATCH_TAGS', tags: [tagsList[0] || 'botnet'] },
-          { type: 'MATCH_TAGS', tags: [tagsList[1] || 'c2'] },
-        ],
+        conditions: [{ type: 'MATCH_TAGS', tags }],
       };
     } else if (correlationType === 'THRESHOLD') {
-      conditionPayload = { type: 'OCCURRENCE_COUNT', minOccurrences: Number(thresholdCount) };
+      condition = {
+        type: 'OCCURRENCE_COUNT',
+        minOccurrences: Number(thresholdCount),
+      };
     } else if (correlationType === 'CORRELATION') {
-      conditionPayload = { type: 'MALWARE_CVE_LINK' };
+      condition = {
+        type: 'MALWARE_CVE_LINK',
+      };
     } else {
-      conditionPayload = { type: 'MATCH_TAGS', tags: tagInput.split(',').map((t) => t.trim()).filter(Boolean) };
+      const tags = tagInput.split(',').map((t) => t.trim()).filter(Boolean);
+      condition = {
+        type: 'MATCH_TAGS',
+        tags: tags.length ? tags : ['suspicious'],
+      };
     }
 
     try {
       await fetch(`${API_BASE_URL}/detection-rules`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: name.trim(),
-          description: description.trim() || undefined,
-          severity,
+          name,
+          description,
           correlationType,
-          condition: conditionPayload,
+          severity,
+          enabled: true,
+          condition,
         }),
       });
 
@@ -102,51 +133,52 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
       setDescription('');
       fetchRules();
     } catch (err) {
-      console.error('Failed to create rule', err);
+      console.error('Error creating rule:', err);
     }
   };
 
   const getCorrelationBadge = (type: string) => {
     switch (type) {
-      case 'MULTI_CONDITION':
-        return 'bg-purple-950/80 text-purple-400 border-purple-500/40';
-      case 'THRESHOLD':
-        return 'bg-yellow-950/80 text-yellow-400 border-yellow-500/40';
+      case 'STATISTICAL_ANOMALY':
+        return 'bg-purple-950/80 text-purple-400 border-purple-500/40 glow-purple';
       case 'CORRELATION':
-        return 'bg-terminal-green-dark text-terminal-green border-terminal-border';
+        return 'bg-[#00ffaa]/10 text-[#00ffaa] border-[#00ffaa]/30';
+      case 'MULTI_CONDITION':
+        return 'bg-cyan-950/80 text-cyan-400 border-cyan-500/40';
+      case 'THRESHOLD':
+        return 'bg-amber-950/80 text-amber-400 border-amber-500/40';
       default:
-        return 'bg-[#050705] text-terminal-green-dim border-terminal-border';
+        return 'bg-terminal-surface text-terminal-green border-terminal-border';
     }
   };
 
   return (
-    <div className="space-y-6 font-mono text-terminal-green">
-      {/* Top Header */}
-      <div className="soc-card p-6 rounded-xl border border-terminal-border bg-[#0a0f0a]/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono">
+    <div className="space-y-6 font-mono">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-terminal-border">
         <div>
-          <h2 className="text-sm font-bold font-mono text-terminal-green flex items-center gap-2 text-glow-green">
-            <Settings className="w-5 h-5 text-terminal-green" />
-            <span>DATA-DRIVEN DETECTION RULES ENGINE</span>
+          <h2 className="text-lg font-bold text-terminal-green flex items-center gap-2 font-mono uppercase text-glow-green">
+            <GitBranch className="w-5 h-5 text-terminal-green" />
+            <span>Multi-Vector Detection Rules Engine</span>
           </h2>
-          <p className="text-xs text-terminal-green-dim mt-0.5 font-mono">
-            Configure multi-condition, threshold, and correlation rules evaluated in real time post feed sync.
+          <p className="text-xs text-terminal-green-dim font-mono">
+            Configure correlation logic, multi-condition triggers, and Z-score statistical anomaly algorithms.
           </p>
         </div>
 
         {!isReadOnly && (
           <button
             onClick={() => setShowModal(true)}
-            className="px-4 py-2.5 rounded-lg bg-terminal-green-dark hover:bg-terminal-border text-terminal-green text-xs font-mono font-bold transition flex items-center gap-2 border border-terminal-border shadow-lg"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-terminal-green-dark hover:bg-terminal-border text-terminal-green hover:text-terminal-bright font-bold text-xs font-mono transition border border-terminal-border hover:border-terminal-green shadow-lg"
           >
-            <Plus className="w-4 h-4 text-terminal-green" />
-            <span>New Multi-Condition Rule</span>
+            <Plus className="w-4 h-4" />
+            <span>Create Detection Rule</span>
           </button>
         )}
       </div>
 
-      {/* Rules Grid */}
       {loading ? (
-        <div className="p-16 text-center text-terminal-muted font-mono text-xs space-y-3">
+        <div className="p-12 text-center text-terminal-green font-mono text-xs space-y-2">
           <div className="w-6 h-6 border-2 border-terminal-green border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p>Loading detection rules...</p>
         </div>
@@ -208,7 +240,7 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
         </div>
       )}
 
-      {/* New Rule Creator Modal - Render ONLY if not READ_ONLY */}
+      {/* New Rule Creator Modal */}
       {showModal && !isReadOnly && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="soc-card border border-terminal-border rounded-xl max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs bg-[#0a0f0a]">
@@ -229,7 +261,7 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Multi-Tag Botnet & Ransomware Rule"
+                  placeholder="e.g. High IOC Frequency Z-Score Anomaly Rule"
                   className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                   required
                 />
@@ -254,6 +286,7 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
                     onChange={(e) => setCorrelationType(e.target.value as any)}
                     className="w-full bg-[#050705] border border-terminal-border rounded px-3 py-2 text-terminal-green focus:outline-none font-mono"
                   >
+                    <option value="STATISTICAL_ANOMALY" className="bg-[#050705]">STATISTICAL_ANOMALY (Z-Score Algorithm)</option>
                     <option value="MULTI_CONDITION" className="bg-[#050705]">MULTI_CONDITION (AND/OR)</option>
                     <option value="THRESHOLD" className="bg-[#050705]">THRESHOLD (Occurrence Count)</option>
                     <option value="CORRELATION" className="bg-[#050705]">CORRELATION (CVE Link)</option>
@@ -275,6 +308,47 @@ export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token, u
                   </select>
                 </div>
               </div>
+
+              {correlationType === 'STATISTICAL_ANOMALY' && (
+                <div className="p-3 bg-[#050705] rounded border border-terminal-border space-y-3 font-mono">
+                  <div>
+                    <label className="block text-[10px] text-purple-400 font-bold mb-1 uppercase">Target Metric</label>
+                    <select
+                      value={anomalyMetric}
+                      onChange={(e) => setAnomalyMetric(e.target.value as any)}
+                      className="w-full bg-[#050705] border border-terminal-border rounded px-2.5 py-1.5 text-terminal-green font-mono"
+                    >
+                      <option value="IOC_FREQUENCY">IOC Ingestion Frequency (Per Feed)</option>
+                      <option value="CVSS_DISTRIBUTION">CVSS Score Distribution (Incoming CVEs)</option>
+                      <option value="ALERT_FREQUENCY">Alert Spike Frequency (Rule Velocity)</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] text-terminal-green-dim mb-1 uppercase">Z-Score Threshold (≥)</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={zThreshold}
+                        onChange={(e) => setZThreshold(Number(e.target.value))}
+                        className="w-full bg-[#050705] border border-terminal-border rounded px-2.5 py-1.5 text-terminal-green font-mono"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-terminal-green-dim mb-1 uppercase">Rolling Window (Mins)</label>
+                      <input
+                        type="number"
+                        value={windowMinutes}
+                        onChange={(e) => setWindowMinutes(Number(e.target.value))}
+                        className="w-full bg-[#050705] border border-terminal-border rounded px-2.5 py-1.5 text-terminal-green font-mono"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {correlationType === 'MULTI_CONDITION' && (
                 <div className="p-3 bg-[#050705] rounded border border-terminal-border space-y-3 font-mono">

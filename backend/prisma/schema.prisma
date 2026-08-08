@@ -54,6 +54,7 @@ enum RuleCorrelationType {
   MULTI_CONDITION
   THRESHOLD
   CORRELATION
+  STATISTICAL_ANOMALY
 }
 
 model User {

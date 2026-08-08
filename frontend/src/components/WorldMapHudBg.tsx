@@ -2,136 +2,165 @@ import React from 'react';
 
 export const WorldMapHudBg: React.FC = () => {
   return (
-    <div className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none p-4 sm:p-8 z-0">
-      {/* Large Outer HUD Window Box matching reference screenshot */}
-      <div className="relative w-full max-w-5xl h-[680px] border border-[#00ffaa]/40 rounded-2xl bg-[#041209]/40 backdrop-blur-[2px] shadow-[0_0_50px_rgba(0,255,170,0.15)] flex flex-col justify-between p-4 overflow-hidden">
-        
-        {/* Top HUD Window Bar */}
-        <div className="w-full flex items-center justify-between border-b border-[#00ffaa]/20 pb-2 px-2 text-[10px] font-mono text-[#00ffaa]/70">
+    <div className="fixed inset-0 w-full h-full pointer-events-none z-0 flex items-center justify-between px-4 sm:px-8 overflow-hidden select-none">
+      
+      {/* LEFT MAP PANEL */}
+      <div className="hidden lg:flex flex-col justify-between w-[340px] xl:w-[420px] h-[580px] border border-[#00ff88]/25 rounded-2xl bg-[#08120d]/50 p-4 relative backdrop-blur-[2px] shadow-[0_0_30px_rgba(0,255,136,0.08)]">
+        {/* Top Panel HUD Header */}
+        <div className="flex items-center justify-between border-b border-[#00ff88]/20 pb-2 text-[10px] font-mono text-[#00ff88]/70">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#00ffaa] animate-pulse" />
-            <span className="font-bold tracking-wider">NCTIP // GLOBAL CYBER THREAT RADAR</span>
+            <span className="w-2 h-2 rounded-full bg-[#00ff88] animate-pulse" />
+            <span className="font-bold tracking-wider">WESTERN RADAR // NODE_01</span>
           </div>
-          {/* Top Right Window Control Icons */}
-          <div className="flex items-center gap-1.5 opacity-80">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#00ffaa]/30 border border-[#00ffaa]/60" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#00ffaa]/30 border border-[#00ffaa]/60" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#00ffaa]/30 border border-[#00ffaa]/60" />
-          </div>
+          <span className="text-[#5a8a6e]">SEC.L5</span>
         </div>
 
-        {/* Detailed Vector World Map Graphic & HUD Coordinate Grid */}
-        <div className="absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden">
-          <svg
-            className="w-full h-full opacity-35"
-            viewBox="0 0 1000 500"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+        {/* Western Hemisphere World Map Vector Outline (Americas) */}
+        <div className="relative flex-1 w-full h-full my-2 overflow-hidden">
+          <svg className="w-full h-full opacity-40" viewBox="0 0 400 350" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              {/* Green HUD Grid Pattern */}
-              <pattern id="map-grid" width="25" height="25" patternUnits="userSpaceOnUse">
-                <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#00ffaa" strokeWidth="0.5" opacity="0.25" />
+              <pattern id="grid-left" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#00ff88" strokeWidth="0.5" opacity="0.2" />
               </pattern>
             </defs>
+            <rect width="400" height="350" fill="url(#grid-left)" />
 
-            {/* Grid Overlay */}
-            <rect width="1000" height="500" fill="url(#map-grid)" />
-
-            {/* North America */}
+            {/* North America Dotted Pixel Outline */}
             <path
-              d="M 150 120 Q 200 100 280 130 Q 320 180 280 230 Q 220 250 180 210 Q 130 180 150 120 Z"
-              fill="#00ffaa"
-              opacity="0.12"
-              stroke="#00ffaa"
+              d="M 60 60 Q 120 40 220 70 Q 260 140 210 200 Q 140 220 100 180 Q 50 140 60 60 Z"
+              fill="#00ff88"
+              opacity="0.15"
+              stroke="#00ff88"
               strokeWidth="1.5"
-              strokeDasharray="4 2"
+              strokeDasharray="4 3"
             />
-            {/* South America */}
+            {/* South America Outline */}
             <path
-              d="M 270 270 Q 330 280 340 340 Q 310 420 270 410 Q 240 350 270 270 Z"
-              fill="#00ffaa"
-              opacity="0.12"
-              stroke="#00ffaa"
+              d="M 190 220 Q 250 230 260 290 Q 230 340 190 330 Q 160 280 190 220 Z"
+              fill="#00ff88"
+              opacity="0.15"
+              stroke="#00ff88"
               strokeWidth="1.5"
-              strokeDasharray="4 2"
-            />
-            {/* Europe */}
-            <path
-              d="M 460 110 Q 540 100 560 150 Q 520 190 470 170 Q 440 140 460 110 Z"
-              fill="#00ffaa"
-              opacity="0.12"
-              stroke="#00ffaa"
-              strokeWidth="1.5"
-              strokeDasharray="4 2"
-            />
-            {/* Africa */}
-            <path
-              d="M 460 200 Q 560 210 560 300 Q 510 370 470 340 Q 440 280 460 200 Z"
-              fill="#00ffaa"
-              opacity="0.12"
-              stroke="#00ffaa"
-              strokeWidth="1.5"
-              strokeDasharray="4 2"
-            />
-            {/* Asia */}
-            <path
-              d="M 580 100 Q 780 90 850 170 Q 800 260 680 240 Q 580 180 580 100 Z"
-              fill="#00ffaa"
-              opacity="0.12"
-              stroke="#00ffaa"
-              strokeWidth="1.5"
-              strokeDasharray="4 2"
-            />
-            {/* Australia */}
-            <path
-              d="M 760 310 Q 840 310 850 370 Q 800 420 750 390 Q 730 350 760 310 Z"
-              fill="#00ffaa"
-              opacity="0.12"
-              stroke="#00ffaa"
-              strokeWidth="1.5"
-              strokeDasharray="4 2"
+              strokeDasharray="4 3"
             />
 
-            {/* Glowing Active Threat Node Hotspots matching reference image */}
-            {/* US West Node */}
-            <circle cx="190" cy="170" r="14" fill="#00ffaa" opacity="0.15" className="animate-ping" />
-            <circle cx="190" cy="170" r="5" fill="#00ffaa" />
-            
-            {/* US East Node */}
-            <circle cx="270" cy="160" r="14" fill="#00ffaa" opacity="0.15" className="animate-ping" />
-            <circle cx="270" cy="160" r="5" fill="#00ffaa" />
+            {/* Connecting Graph Lines */}
+            <line x1="110" y1="120" x2="200" y2="100" stroke="#00ff88" strokeWidth="1" strokeDasharray="2 2" opacity="0.6" />
+            <line x1="200" y1="100" x2="220" y2="250" stroke="#00ff88" strokeWidth="1" strokeDasharray="2 2" opacity="0.6" />
 
-            {/* Europe Node */}
-            <circle cx="500" cy="140" r="16" fill="#00ffaa" opacity="0.2" className="animate-ping" />
-            <circle cx="500" cy="140" r="6" fill="#00ffaa" />
+            {/* Glowing Threat Pulse Nodes */}
+            <circle cx="110" cy="120" r="12" fill="#00ff88" opacity="0.2" className="animate-ping" />
+            <circle cx="110" cy="120" r="4" fill="#00ff88" />
 
-            {/* East Asia / Japan Node */}
-            <circle cx="810" cy="180" r="16" fill="#00ffaa" opacity="0.2" className="animate-ping" />
-            <circle cx="810" cy="180" r="6" fill="#00ffaa" />
+            <circle cx="200" cy="100" r="14" fill="#00ff88" opacity="0.25" className="animate-ping" />
+            <circle cx="200" cy="100" r="5" fill="#00ff88" />
 
-            {/* Southeast Asia Node */}
-            <circle cx="730" cy="240" r="12" fill="#00ffaa" opacity="0.15" className="animate-ping" />
-            <circle cx="730" cy="240" r="4" fill="#00ffaa" />
+            <circle cx="220" cy="250" r="10" fill="#00ff88" opacity="0.2" className="animate-ping" />
+            <circle cx="220" cy="250" r="3.5" fill="#00ff88" />
           </svg>
         </div>
 
-        {/* Telemetry Text Widget on Left (from reference screenshot) */}
-        <div className="relative z-10 p-3 rounded-lg bg-[#020b05]/80 border border-[#00ffaa]/30 text-[9px] font-mono text-[#00ffaa]/80 max-w-[150px] space-y-1">
-          <p className="font-bold text-[#00ffaa]">SYSTEM ONLINE</p>
-          <p className="text-[#00ffaa]/60">PORT 57 1004</p>
-          <p className="text-[#00ffaa]/60">GATE 9700 OS</p>
-          <div className="h-0.5 bg-[#00ffaa]/30 my-1" />
-          <p className="text-[8px] opacity-70">LATENCY: 12ms</p>
+        {/* Corner HUD Overlay Readout Box */}
+        <div className="border border-[#00ff88]/30 bg-[#040b07]/80 rounded-lg p-2.5 font-mono text-[9px] text-[#5a8a6e] space-y-1">
+          <div className="flex justify-between text-[#00ff88] font-bold">
+            <span>[SYS_TELEMETRY]</span>
+            <span>PORT 57 1004</span>
+          </div>
+          <p>STATUS: ACTIVE THREAT MONITOR</p>
+          <p>BOOT: 7800 OS // LAT: 38.8951 N</p>
         </div>
-
-        {/* Bottom HUD Telemetry Line */}
-        <div className="w-full flex items-center justify-between border-t border-[#00ffaa]/20 pt-2 px-2 text-[9px] font-mono text-[#00ffaa]/50 z-10">
-          <span>COORDINATES: 38.8951° N, 77.0364° W</span>
-          <span>CYBER DEFENSE CELL // LEVEL 5 CLASSIFIED</span>
-        </div>
-
       </div>
+
+      {/* RIGHT MAP PANEL */}
+      <div className="hidden lg:flex flex-col justify-between w-[340px] xl:w-[420px] h-[580px] border border-[#00ff88]/25 rounded-2xl bg-[#08120d]/50 p-4 relative backdrop-blur-[2px] shadow-[0_0_30px_rgba(0,255,136,0.08)]">
+        {/* Top Panel HUD Header */}
+        <div className="flex items-center justify-between border-b border-[#00ff88]/20 pb-2 text-[10px] font-mono text-[#00ff88]/70">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#00ff88] animate-pulse" />
+            <span className="font-bold tracking-wider">EASTERN RADAR // NODE_02</span>
+          </div>
+          {/* Top Right Controls */}
+          <div className="flex items-center gap-1.5 opacity-60">
+            <span className="w-2 h-2 rounded-full border border-[#00ff88]" />
+            <span className="w-2 h-2 rounded-full border border-[#00ff88]" />
+            <span className="w-2 h-2 rounded-full border border-[#00ff88]" />
+          </div>
+        </div>
+
+        {/* Eastern Hemisphere World Map Vector Outline (Europe/Asia/Africa/Australia) */}
+        <div className="relative flex-1 w-full h-full my-2 overflow-hidden">
+          <svg className="w-full h-full opacity-40" viewBox="0 0 400 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid-right" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#00ff88" strokeWidth="0.5" opacity="0.2" />
+              </pattern>
+            </defs>
+            <rect width="400" height="350" fill="url(#grid-right)" />
+
+            {/* Europe */}
+            <path
+              d="M 60 60 Q 130 50 150 100 Q 110 140 70 120 Q 40 90 60 60 Z"
+              fill="#00ff88"
+              opacity="0.15"
+              stroke="#00ff88"
+              strokeWidth="1.5"
+              strokeDasharray="4 3"
+            />
+            {/* Africa */}
+            <path
+              d="M 60 140 Q 150 150 150 240 Q 100 300 60 270 Q 30 220 60 140 Z"
+              fill="#00ff88"
+              opacity="0.15"
+              stroke="#00ff88"
+              strokeWidth="1.5"
+              strokeDasharray="4 3"
+            />
+            {/* Asia */}
+            <path
+              d="M 170 50 Q 340 40 370 130 Q 310 220 220 200 Q 150 130 170 50 Z"
+              fill="#00ff88"
+              opacity="0.15"
+              stroke="#00ff88"
+              strokeWidth="1.5"
+              strokeDasharray="4 3"
+            />
+            {/* Australia */}
+            <path
+              d="M 280 250 Q 350 250 360 300 Q 310 340 270 320 Q 250 280 280 250 Z"
+              fill="#00ff88"
+              opacity="0.15"
+              stroke="#00ff88"
+              strokeWidth="1.5"
+              strokeDasharray="4 3"
+            />
+
+            {/* Connecting Graph Lines */}
+            <line x1="90" y1="90" x2="250" y2="100" stroke="#00ff88" strokeWidth="1" strokeDasharray="2 2" opacity="0.6" />
+            <line x1="250" y1="100" x2="330" y2="120" stroke="#00ff88" strokeWidth="1" strokeDasharray="2 2" opacity="0.6" />
+
+            {/* Glowing Threat Pulse Nodes */}
+            <circle cx="90" cy="90" r="14" fill="#00ff88" opacity="0.25" className="animate-ping" />
+            <circle cx="90" cy="90" r="5" fill="#00ff88" />
+
+            <circle cx="250" cy="100" r="16" fill="#00ff88" opacity="0.25" className="animate-ping" />
+            <circle cx="250" cy="100" r="6" fill="#00ff88" />
+
+            <circle cx="330" cy="120" r="12" fill="#00ff88" opacity="0.2" className="animate-ping" />
+            <circle cx="330" cy="120" r="4" fill="#00ff88" />
+          </svg>
+        </div>
+
+        {/* Corner HUD Overlay Readout Box */}
+        <div className="border border-[#00ff88]/30 bg-[#040b07]/80 rounded-lg p-2.5 font-mono text-[9px] text-[#5a8a6e] space-y-1">
+          <div className="flex justify-between text-[#00ff88] font-bold">
+            <span>[RADAR_TRACE_02]</span>
+            <span>GATE 9700 OS</span>
+          </div>
+          <p>STATUS: ONLINE // ZERO BREACHES</p>
+          <p>ENCRYPTION: AES-256 GCM ACTIVE</p>
+        </div>
+      </div>
+
     </div>
   );
 };

@@ -7,13 +7,18 @@ import { NctipLogo } from './NctipLogo';
 
 export const LoginPage: React.FC = () => {
   const { login, error, clearError, isLoading } = useAuth();
+  
+  // Real login fields wired to backend
   const [email, setEmail] = useState('user.admin@nctip.gov');
   const [password, setPassword] = useState('AdminSecurePass123!');
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Cosmetic / UI state matching reference design
   const [authMethod, setAuthMethod] = useState('TOTP TOKEN');
   const [selectedRole, setSelectedRole] = useState<'ADMIN' | 'SOC_ANALYST' | 'INVESTIGATOR'>('ADMIN');
   const [submitting, setSubmitting] = useState(false);
 
+  // Handle role selection (pre-fills credentials for convenience)
   const handleRoleSelect = (role: 'ADMIN' | 'SOC_ANALYST' | 'INVESTIGATOR') => {
     setSelectedRole(role);
     if (role === 'ADMIN') {
@@ -28,58 +33,59 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  // Real Login Form Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
 
     setSubmitting(true);
     try {
-      // Map user.admin@nctip.gov to internal seed email admin@cyberintel.gov if needed
-      const loginEmail = email === 'user.admin@nctip.gov' ? 'admin@cyberintel.gov' : email;
-      await login(loginEmail, password);
+      // Map user.admin@nctip.gov to internal backend seed admin@cyberintel.gov
+      const actualLoginEmail = email === 'user.admin@nctip.gov' ? 'admin@cyberintel.gov' : email;
+      await login(actualLoginEmail, password);
     } catch (err) {
-      // Handled by AuthContext
+      // Handled by AuthContext error state
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-[#020904] font-mono text-[#00ffaa] select-none">
-      {/* 1. Animated Digital Rain Background */}
-      <MatrixRainBg opacity={0.5} />
+    <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-[#0a0e0d] font-mono text-[#00ff88] select-none">
+      
+      {/* 1. Low-opacity Matrix Alphanumeric Digital Rain */}
+      <MatrixRainBg opacity={0.2} />
 
-      {/* 2. CRT Scanline Mesh */}
-      <div className="fixed inset-0 bg-crt-scanlines pointer-events-none z-50 opacity-25" />
+      {/* 2. CRT Scanline Mesh Effect */}
+      <div className="fixed inset-0 bg-crt-scanlines pointer-events-none z-10 opacity-20" />
 
-      {/* 3. Detailed HUD Framework Box with World Map Vector Background matching screenshot */}
+      {/* 3. Symmetrical Left & Right World Map Radar Panels Background */}
       <WorldMapHudBg />
 
-      {/* 4. Main Glassmorphic Login Card (Exact match to reference image) */}
-      <div className="relative z-20 w-full max-w-[480px]">
-        <div className="relative rounded-[22px] bg-[#0a1e16]/85 border border-[#00ffaa]/50 p-6 sm:p-8 backdrop-blur-xl shadow-[0_0_50px_rgba(0,255,170,0.25)] space-y-5">
+      {/* 4. Centered Login Card Structure (~450px wide) */}
+      <div className="relative z-20 w-full max-w-[460px]">
+        <div className="relative rounded-2xl bg-[#0a140f]/90 border border-[#00ff88]/40 p-6 sm:p-7 backdrop-blur-md shadow-[0_0_40px_rgba(0,255,136,0.15)] space-y-5">
           
-          {/* Top Edge Bevel Bar Accent */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-[2px] bg-gradient-to-r from-transparent via-[#00ffaa] to-transparent shadow-[0_0_10px_#00ffaa]" />
-          
-          {/* Header Title Section with NCTIP Eagle Emblem */}
-          <div className="flex items-center gap-3.5 pt-1">
-            {/* Exact NCTIP Shield Eagle Emblem */}
-            <NctipLogo className="w-14 h-16 shrink-0 drop-shadow-[0_0_10px_rgba(0,255,170,0.5)]" />
+          {/* Top Subtle Edge Highlight */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-[1.5px] bg-gradient-to-r from-transparent via-[#00ff88] to-transparent opacity-80" />
 
-            <div>
-              <h1 className="text-base sm:text-lg font-black tracking-tight leading-tight uppercase font-mono">
-                <span className="text-[#00ffaa] text-glow-green block">NATIONAL CYBER THREAT</span>
-                <span className="text-[#00ffaa] text-glow-green block">INTELLIGENCE PLATFORM</span>
-              </h1>
-              <p className="text-[9.5px] text-[#00ffaa]/70 uppercase tracking-widest mt-1 font-semibold">
-                ACCESS CONTROL PORTAL // AUTHORIZED PERSONNEL ONLY.
-              </p>
-            </div>
+          {/* ITEM 1: Header Row (Shield icon/logo + Two-line bold title) */}
+          <div className="flex items-center gap-3">
+            <NctipLogo className="w-11 h-11 shrink-0" />
+            <h1 className="text-[20px] font-black text-[#00ff88] leading-tight tracking-tight uppercase font-mono">
+              NATIONAL CYBER THREAT<br />
+              INTELLIGENCE PLATFORM
+            </h1>
           </div>
 
+          {/* ITEM 2: Subtitle */}
+          <p className="text-[10px] text-[#5a8a6e] font-semibold tracking-wider uppercase font-mono mt-0.5">
+            ACCESS CONTROL PORTAL // AUTHORIZED PERSONNEL ONLY.
+          </p>
+
+          {/* Backend Error Banner */}
           {error && (
-            <div className="p-3 rounded-xl bg-red-950/80 border border-red-500/60 text-red-300 text-xs flex items-center justify-between font-mono shadow-lg">
+            <div className="p-3 rounded-lg bg-red-950/80 border border-red-500/60 text-red-300 text-xs flex items-center justify-between font-mono shadow-md">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
                 <span>{error}</span>
@@ -88,17 +94,17 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Form Controls */}
+          {/* LOGIN FORM */}
           <form onSubmit={handleSubmit} className="space-y-4 text-xs font-mono">
             
-            {/* Email Field */}
+            {/* ITEM 3: Field "EMAIL ADDRESS" */}
             <div>
-              <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[#00ffaa]/90 mb-1.5">
+              <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[#5a8a6e] mb-1.5">
                 EMAIL ADDRESS
               </label>
               <div className="relative">
-                <div className="absolute left-3.5 top-2.5 w-5 h-5 border border-[#00ffaa]/40 rounded-md flex items-center justify-center bg-[#041209]">
-                  <Lock className="w-3 h-3 text-[#00ffaa]" />
+                <div className="absolute left-3.5 top-3 w-4 h-4 text-[#00ff88]/70 flex items-center justify-center">
+                  <Lock className="w-3.5 h-3.5 text-[#00ff88]" />
                 </div>
                 <input
                   type="email"
@@ -106,19 +112,19 @@ export const LoginPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="user.admin@nctip.gov"
-                  className="w-full bg-[#11271d]/90 border border-[#00ffaa]/50 rounded-xl py-2.5 pl-11 pr-4 text-xs font-mono text-white placeholder-[#00ffaa]/40 focus:outline-none focus:border-[#00ffaa] focus:ring-1 focus:ring-[#00ffaa] transition-all shadow-inner"
+                  className="w-full h-[46px] bg-[#0d1410] border border-[#00ff88]/30 rounded-lg pl-10 pr-4 text-xs font-mono text-[#00ff88] placeholder-[#5a8a6e]/50 focus:outline-none focus:border-[#00ff88] focus:ring-1 focus:ring-[#00ff88] transition-all"
                 />
               </div>
             </div>
 
-            {/* Password Field */}
+            {/* ITEM 4: Field "PASSWORD" */}
             <div>
-              <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[#00ffaa]/90 mb-1.5">
+              <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[#5a8a6e] mb-1.5">
                 PASSWORD
               </label>
               <div className="relative">
-                <div className="absolute left-3.5 top-2.5 w-5 h-5 border border-[#00ffaa]/40 rounded-md flex items-center justify-center bg-[#041209]">
-                  <Lock className="w-3 h-3 text-[#00ffaa]" />
+                <div className="absolute left-3.5 top-3 w-4 h-4 text-[#00ff88]/70 flex items-center justify-center">
+                  <Lock className="w-3.5 h-3.5 text-[#00ff88]" />
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -126,106 +132,100 @@ export const LoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#11271d]/90 border border-[#00ffaa]/50 rounded-xl py-2.5 pl-11 pr-10 text-xs font-mono text-white placeholder-[#00ffaa]/40 focus:outline-none focus:border-[#00ffaa] focus:ring-1 focus:ring-[#00ffaa] transition-all shadow-inner"
+                  className="w-full h-[46px] bg-[#0d1410] border border-[#00ff88]/30 rounded-lg pl-10 pr-10 text-xs font-mono text-[#00ff88] placeholder-[#5a8a6e]/50 focus:outline-none focus:border-[#00ff88] focus:ring-1 focus:ring-[#00ff88] transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-3 text-[#00ffaa]/60 hover:text-[#00ffaa]"
+                  className="absolute right-3.5 top-3 text-[#5a8a6e] hover:text-[#00ff88] transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Authentication Method Dropdown */}
+            {/* ITEM 5: Field "AUTHENTICATION METHOD" */}
             <div>
-              <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[#00ffaa]/90 mb-1.5">
+              <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[#5a8a6e] mb-1.5">
                 AUTHENTICATION METHOD
               </label>
               <div className="relative">
                 <select
                   value={authMethod}
                   onChange={(e) => setAuthMethod(e.target.value)}
-                  className="w-full bg-[#11271d]/90 border border-[#00ffaa]/50 rounded-xl py-2.5 px-3 text-xs font-mono text-white appearance-none focus:outline-none focus:border-[#00ffaa] cursor-pointer"
+                  className="w-full h-[46px] bg-[#0d1410] border border-[#00ff88]/30 rounded-lg px-3 text-xs font-mono text-[#00ff88] appearance-none focus:outline-none focus:border-[#00ff88] cursor-pointer"
                 >
-                  <option value="TOTP TOKEN" className="bg-[#041209] text-white">TOTP TOKEN</option>
-                  <option value="HARDWARE KEY (FIDO2)" className="bg-[#041209] text-white">HARDWARE KEY (FIDO2)</option>
-                  <option value="PKI CAC/PIV CARD" className="bg-[#041209] text-white">PKI CAC/PIV CARD</option>
+                  <option value="TOTP TOKEN" className="bg-[#0d1410] text-[#00ff88]">TOTP TOKEN</option>
+                  <option value="HARDWARE KEY (FIDO2)" className="bg-[#0d1410] text-[#00ff88]">HARDWARE KEY (FIDO2)</option>
+                  <option value="PKI CAC/PIV CARD" className="bg-[#0d1410] text-[#00ff88]">PKI CAC/PIV CARD</option>
                 </select>
-                <ChevronDown className="w-4 h-4 text-[#00ffaa]/70 absolute right-3.5 top-3 pointer-events-none" />
+                <ChevronDown className="w-4 h-4 text-[#5a8a6e] absolute right-3.5 top-3.5 pointer-events-none" />
               </div>
             </div>
 
-            {/* Role Badge Selection Tiles matching screenshot */}
+            {/* ITEM 6: "ROLE BADGE SELECTION" (Row of 3 equal-width selectable badges) */}
             <div>
-              <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[#00ffaa]/90 mb-2">
+              <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[#5a8a6e] mb-2">
                 ROLE BADGE SELECTION
               </label>
               <div className="grid grid-cols-3 gap-2.5">
                 
-                {/* ADMIN Tile */}
+                {/* ADMIN Badge */}
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('ADMIN')}
-                  className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`p-2.5 rounded-lg border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     selectedRole === 'ADMIN'
-                      ? 'bg-[#00ffaa]/15 border-2 border-[#00ffaa] text-white shadow-[0_0_20px_rgba(0,255,170,0.35)]'
-                      : 'bg-[#06180f]/70 border-[#00ffaa]/30 text-[#00ffaa]/60 hover:border-[#00ffaa]/60 hover:text-white'
+                      ? 'bg-[#00ff88]/15 border-[#00ff88] text-[#00ff88] shadow-[0_0_15px_rgba(0,255,136,0.25)] font-bold'
+                      : 'bg-[#0d1410] border-[#00ff88]/20 text-[#5a8a6e] hover:border-[#00ff88]/50 hover:text-[#00ff88]'
                   }`}
                 >
-                  <div className={`p-2 rounded-full border ${selectedRole === 'ADMIN' ? 'bg-[#00ffaa] border-[#00ffaa] text-[#041209]' : 'border-[#00ffaa]/40'}`}>
-                    <Shield className="w-4 h-4 stroke-[2.2]" />
-                  </div>
-                  <span className="text-[10.5px] font-extrabold tracking-wider">ADMIN</span>
+                  <Shield className="w-4 h-4" />
+                  <span className="text-[10px] tracking-wider uppercase font-bold">ADMIN</span>
                 </button>
 
-                {/* SOC_ANALYST Tile */}
+                {/* SOC_ANALYST Badge */}
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('SOC_ANALYST')}
-                  className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`p-2.5 rounded-lg border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     selectedRole === 'SOC_ANALYST'
-                      ? 'bg-[#00ffaa]/15 border-2 border-[#00ffaa] text-white shadow-[0_0_20px_rgba(0,255,170,0.35)]'
-                      : 'bg-[#06180f]/70 border-[#00ffaa]/30 text-[#00ffaa]/60 hover:border-[#00ffaa]/60 hover:text-white'
+                      ? 'bg-[#00ff88]/15 border-[#00ff88] text-[#00ff88] shadow-[0_0_15px_rgba(0,255,136,0.25)] font-bold'
+                      : 'bg-[#0d1410] border-[#00ff88]/20 text-[#5a8a6e] hover:border-[#00ff88]/50 hover:text-[#00ff88]'
                   }`}
                 >
-                  <div className={`p-2 rounded-full border ${selectedRole === 'SOC_ANALYST' ? 'bg-[#00ffaa] border-[#00ffaa] text-[#041209]' : 'border-[#00ffaa]/40'}`}>
-                    <Target className="w-4 h-4 stroke-[2.2]" />
-                  </div>
-                  <span className="text-[10.5px] font-extrabold tracking-wider">SOC_ANALYST</span>
+                  <Target className="w-4 h-4" />
+                  <span className="text-[10px] tracking-wider uppercase font-bold">SOC_ANALYST</span>
                 </button>
 
-                {/* INVESTIGATOR Tile */}
+                {/* INVESTIGATOR Badge */}
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('INVESTIGATOR')}
-                  className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`p-2.5 rounded-lg border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     selectedRole === 'INVESTIGATOR'
-                      ? 'bg-[#00ffaa]/15 border-2 border-[#00ffaa] text-white shadow-[0_0_20px_rgba(0,255,170,0.35)]'
-                      : 'bg-[#06180f]/70 border-[#00ffaa]/30 text-[#00ffaa]/60 hover:border-[#00ffaa]/60 hover:text-white'
+                      ? 'bg-[#00ff88]/15 border-[#00ff88] text-[#00ff88] shadow-[0_0_15px_rgba(0,255,136,0.25)] font-bold'
+                      : 'bg-[#0d1410] border-[#00ff88]/20 text-[#5a8a6e] hover:border-[#00ff88]/50 hover:text-[#00ff88]'
                   }`}
                 >
-                  <div className={`p-2 rounded-full border ${selectedRole === 'INVESTIGATOR' ? 'bg-[#00ffaa] border-[#00ffaa] text-[#041209]' : 'border-[#00ffaa]/40'}`}>
-                    <Search className="w-4 h-4 stroke-[2.2]" />
-                  </div>
-                  <span className="text-[10.5px] font-extrabold tracking-wider">INVESTIGATOR</span>
+                  <Search className="w-4 h-4" />
+                  <span className="text-[10px] tracking-wider uppercase font-bold">INVESTIGATOR</span>
                 </button>
 
               </div>
             </div>
 
-            {/* Glowing Mint/Neon Green Main Button */}
+            {/* ITEM 7: Primary CTA Button (Full width green gradient fill, black contrast text) */}
             <button
               type="submit"
               disabled={submitting || isLoading}
-              className="w-full mt-2 bg-gradient-to-r from-[#00ffaa] via-[#34d399] to-[#00ffaa] hover:from-[#22c55e] hover:to-[#00ffaa] text-[#021008] font-black py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-[0_0_30px_rgba(0,255,170,0.5)] hover:shadow-[0_0_40px_rgba(0,255,170,0.8)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full h-[48px] mt-2 bg-gradient-to-r from-[#00ff88] to-[#10b981] hover:from-[#10b981] hover:to-[#00ff88] text-[#051a10] font-black rounded-lg text-xs uppercase tracking-wider transition-all duration-200 shadow-[0_0_20px_rgba(0,255,136,0.3)] hover:shadow-[0_0_30px_rgba(0,255,136,0.5)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {submitting || isLoading ? (
-                <div className="w-4 h-4 border-2 border-[#021008] border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-[#051a10] border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>INITIALIZE SECURE SOC SESSION</span>
+                  <span className="font-mono font-black text-[12px] tracking-wider">INITIALIZE SECURE SOC SESSION</span>
                   <ArrowRight className="w-4 h-4 stroke-[3]" />
                 </>
               )}
@@ -233,24 +233,31 @@ export const LoginPage: React.FC = () => {
 
           </form>
 
-          {/* Footer Links & MFA Status Indicator */}
-          <div className="pt-3 border-t border-[#00ffaa]/25 flex flex-col items-center gap-2 text-[11px] font-mono">
-            <div className="flex items-center justify-center gap-6 text-[#00ffaa]/90">
-              <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Password reset request dispatched'); }} className="hover:text-white underline underline-offset-2">
-                Forgot Password?
-              </a>
-              <a href="#request" onClick={(e) => { e.preventDefault(); alert('Access request submitted to administrator'); }} className="hover:text-white underline underline-offset-2">
-                Request Access?
-              </a>
-            </div>
+          {/* ITEM 8: Centered row with two underlined text links */}
+          <div className="flex items-center justify-center gap-8 text-[11px] font-mono text-[#5a8a6e] pt-1">
+            <a
+              href="#forgot"
+              onClick={(e) => { e.preventDefault(); alert('Password reset flow: Contact your System Administrator at admin@cyberintel.gov'); }}
+              className="hover:text-[#00ff88] underline underline-offset-4 transition-colors"
+            >
+              Forgot Password?
+            </a>
+            <a
+              href="#request"
+              onClick={(e) => { e.preventDefault(); alert('Access request form: Submit employee CAC/PIV credentials to security department'); }}
+              className="hover:text-[#00ff88] underline underline-offset-4 transition-colors"
+            >
+              Request Access?
+            </a>
+          </div>
 
-            <div className="text-[10.5px] text-[#00ffaa]/80 font-bold pt-1">
-              MFA Status: <span className="text-[#00ffaa] font-black tracking-widest">[ACTIVE]</span>
-            </div>
+          {/* ITEM 9: Footer Line at very bottom of card */}
+          <div className="text-center text-[10.5px] font-mono text-[#5a8a6e] pt-1">
+            MFA Status: <span className="text-[#00ff88] font-bold">[ACTIVE]</span>
           </div>
 
           {/* Bottom Edge Bevel Bar Accent */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-[2px] bg-gradient-to-r from-transparent via-[#00ffaa] to-transparent shadow-[0_0_10px_#00ffaa]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-40 h-[1.5px] bg-gradient-to-r from-transparent via-[#00ff88] to-transparent opacity-80" />
 
         </div>
       </div>

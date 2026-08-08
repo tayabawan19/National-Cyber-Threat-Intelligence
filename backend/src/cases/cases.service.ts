@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { GroqService } from '../llm/groq.service';
 import { CreateCaseDto } from './dto/create-case.dto';
 import { UpdateCaseDto } from './dto/update-case.dto';
 
 @Injectable()
 export class CasesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private groqService: GroqService,
+  ) {}
 
   async create(dto: CreateCaseDto) {
     return this.prisma.case.create({
@@ -69,6 +73,7 @@ export class CasesService {
           },
         },
         iocs: true,
+        forensicArtifacts: true,
       },
     });
 
@@ -192,5 +197,28 @@ export class CasesService {
         },
       },
     });
+  }
+
+  async generateIncidentReport(id: string) {
+    const caseData = await this.findOne(id);
+    const report = await this.groqService.generateIncidentReport(caseData);
+
+    const updated = await this.prisma.case.update({
+      where: { id },
+      data: {
+        incidentReport: report as any,
+      },
+      include: {
+        assignedTo: { select: { id: true, email: true, role: true } },
+        alerts: true,
+        iocs: true,
+        forensicArtifacts: true,
+      },
+    });
+
+    return {
+      ...updated,
+      report,
+    };
   }
 }

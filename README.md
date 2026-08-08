@@ -1,10 +1,10 @@
 # National Cyber Threat Intelligence Platform
 
-An enterprise AI-assisted Security Operations Center (SOC) threat intelligence platform built to aggregate live threat feeds, detect multi-vector cyber threats, correlate malware & vulnerabilities, manage digital forensics with immutable chain-of-custody, and export SIEM alert streams.
+An enterprise AI-assisted Security Operations Center (SOC) threat intelligence platform built to aggregate live threat feeds, detect multi-vector cyber threats, correlate malware & vulnerabilities, manage digital forensics with immutable chain-of-custody, execute automated SOAR response playbooks, stream live SIEM events, provide STIX/TAXII 2.1 threat sharing, and generate dual-audience AI incident reports.
 
 ---
 
-## 🎯 Current Status: Phases 0–5 Complete & Verified
+## 🎯 Current Status: Phases 0–7 Complete & Verified
 
 | Phase | Module / Capability | Status |
 | :--- | :--- | :---: |
@@ -15,6 +15,7 @@ An enterprise AI-assisted Security Operations Center (SOC) threat intelligence p
 | **Phase 4** | SOC Analyst Experience, Spatial Attack Map, Case Management & Read-Only RBAC | ✅ Verified |
 | **Phase 5** | Digital Forensics Module, SIEM Export Stub & Self-Hosted MISP Integration | ✅ Verified |
 | **Phase 6** | Hardening, Production Deployment Prep, Load Testing & Security Audit | ✅ Verified |
+| **Phase 7** | SOAR Response Playbooks, Live SIEM Push, VirusTotal Scanning, Brevo SMTP Alerts, STIX/TAXII 2.1 & Dual-Audience AI Incident Reports | ✅ Verified |
 
 ---
 
@@ -26,7 +27,7 @@ An enterprise AI-assisted Security Operations Center (SOC) threat intelligence p
 - **Threat-Sharing Platform**: Self-Hosted MISP + Dedicated MariaDB 10.11 database
 - **Search & Mirror Engine**: OpenSearch 2.13 (`ctp-iocs`, `ctp-cves`, `ctp-malware`)
 - **Async Queue & Job Broker**: Redis 7, BullMQ (`sync-otx`, `sync-nvd`, `sync-abusech`, `sync-malware`, `sync-misp`)
-- **AI Threat Scoring & Summaries**: Groq API (`llama-3.3-70b-versatile`)
+- **AI Threat Scoring & Reports**: Groq API (`llama-3.3-70b-versatile`)
 - **Container Orchestration**: Docker Compose
 - **Security & Authentication**: JWT Bearer Tokens, Bcrypt Hashing, Role-Based Access Control (`RolesGuard`), Rate Limiting, Configurable CORS
 
@@ -36,14 +37,15 @@ An enterprise AI-assisted Security Operations Center (SOC) threat intelligence p
 
 - **Live Threat Feed Ingestion**: Collectors for AlienVault OTX, NVD CVE 2.0, abuse.ch FeodoTracker, abuse.ch MalwareBazaar, and self-hosted MISP threat-sharing feeds with path-status tagging (`LIVE_API_SUCCESS` / `LIVE_API_FAILED_USED_FALLBACK`).
 - **Multi-Vector Detection Engine**: Configurable rule engine supporting `SIMPLE`, `MULTI_CONDITION`, `THRESHOLD`, and cross-feed `CORRELATION` detection rules.
-- **Malware Repository & Relational Graph**: In-depth malware sample metadata linked relationally to CVE vulnerabilities and IOCs.
-- **Groq LLM Advisory Engine**: Automated AI risk analysis, natural language threat explanations, and suggested severity ratings.
-- **SOC Analyst Command Shell**: High-density dashboard, live spatial attack map visualization, global threat search, and real-time alert triage.
-- **Investigation & Case Management**: Case lifecycle tracking, analyst assignments, linked entity views, and chronological audit trail logs.
+- **Malware Repository & VirusTotal Scanner**: In-depth malware sample metadata linked relationally to CVE vulnerabilities, IOCs, and VirusTotal v3 API reputation verdicts (`POST /api/malware/:id/scan`).
+- **SOAR Automated Response Playbooks**: Event-driven playbook execution engine supporting auto-case creation, severity escalation, analyst round-robin assignment, and live SIEM streaming (`/api/playbooks`).
+- **Live SIEM Push Integrations**: Automated HTTP POST streaming to Splunk HEC (`:8088`) and Wazuh Manager API (`:55000`) on `HIGH` and `CRITICAL` alerts.
+- **STIX 2.1 / TAXII 2.1 Threat Sharing Server**: Normalized STIX 2.1 Cyber Threat Intelligence objects (`indicator`, `malware`, `vulnerability`) exposed via TAXII 2.1 Discovery & Collection REST endpoints (`/api/taxii2/`).
+- **Transactional Email Alerting (Brevo SMTP)**: Automated HTML email alerts sent to `ADMIN` and `INVESTIGATOR` users upon `CRITICAL` alert creation.
+- **Dual-Audience AI Incident Reports**: Groq LLM-powered incident reporter (`POST /api/cases/:id/generate-report`) producing plain-language C-Suite Executive Summaries and Engineering Technical Deep-Dives.
+- **SOC Analyst Command Shell**: High-density dashboard, live spatial attack map visualization, global threat search, real-time alert triage, and SOAR builder UI.
 - **Digital Forensics Module**: Immutable forensic artifact registry (`LOG_FILE`, `MEMORY_DUMP_META`, `NETWORK_CAPTURE_META`, `FILE_METADATA`) with strict append-only chain-of-custody tracking. Rejects past entry editing or deletion.
-- **SIEM Integration Export**: Standardized export endpoint (`GET /api/siem/export`) supporting Common Event Format (`CEF`) and structured `JSON`, protected via administrative static service keys (`X-SIEM-API-KEY`).
 - **Role-Based Access Control (RBAC)**: Fine-grained permissions across `ADMIN`, `INVESTIGATOR`, `SOC_ANALYST`, and `READ_ONLY` roles.
-- **Security Hardened**: Global DTO input validation (`class-validator`), rate-limited authentication (`10 req/min`), environment-configurable CORS, and indexing across high-traffic database columns.
 
 ---
 
@@ -82,6 +84,13 @@ cp .env.example .env
 - `MISP_API_KEY`
 - `MISP_ADMIN_PASSWORD`
 - `SIEM_API_KEY`
+- `SPLUNK_HEC_URL`
+- `SPLUNK_HEC_TOKEN`
+- `WAZUH_API_URL`
+- `WAZUH_API_KEY`
+- `VIRUSTOTAL_API_KEY`
+- `BREVO_SMTP_USER`
+- `BREVO_SMTP_KEY`
 - `OPENSEARCH_NODE`
 
 ---
@@ -101,9 +110,6 @@ npx prisma db seed
 ```
 
 ### 3. Trigger Explicit Data Ingestion
-> [!IMPORTANT]
-> Ingestion is triggered explicitly via seed/sync scripts rather than on container boot to prevent unintentional background data overwrites.
-
 ```bash
 cd backend
 # Synchronize all threat feeds (OTX, NVD, abuse.ch, MISP)
@@ -116,24 +122,9 @@ npx ts-node src/fetch-circl-osint-feed.ts
 ### 4. Access Platform Interfaces
 - **SOC Web Shell**: [http://localhost:5173](http://localhost:5173)
 - **API Swagger Documentation**: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
+- **TAXII 2.1 Discovery API**: [http://localhost:3000/api/taxii2/](http://localhost:3000/api/taxii2/)
 - **MISP Threat-Sharing Web UI**: [http://localhost:8443](http://localhost:8443)
 - **OpenSearch Cluster**: [http://localhost:9200](http://localhost:9200)
-
----
-
-## 🔧 Troubleshooting & Setup FAQs
-
-### Q1: OpenSearch container connection fails during backend boot?
-- **Root Cause**: OpenSearch requires ~15-20 seconds to initialize Java heap and cluster status on fresh docker volume creation.
-- **Solution**: The backend automatically retries connection. If running standalone, verify OpenSearch health via `curl http://localhost:9200`.
-
-### Q2: Data appears empty on clean clone after `docker compose up`?
-- **Root Cause**: Feed ingestion is non-blocking and explicitly triggered via sync scripts to avoid container boot latency.
-- **Solution**: Run `npx ts-node src/run-all-syncs.ts` inside `backend/` to populate live feeds into Postgres and OpenSearch.
-
-### Q3: Rate Limit HTTP 429 Too Many Requests errors during rapid API testing?
-- **Root Cause**: `@nestjs/throttler` enforces rate limits (100 req/min for general API, 10 req/min for `POST /api/auth/login`).
-- **Solution**: Wait 60 seconds or configure custom limits in `app.module.ts`.
 
 ---
 
@@ -143,6 +134,9 @@ Run the automated verification scripts inside the `backend/` directory:
 
 ```bash
 cd backend
+
+# Run Phase 7 Automated Response, STIX/TAXII 2.1 & AI Report Suite
+npx ts-node src/test-phase7-verification.ts
 
 # Run Phase 6 Load & Stress Testing Benchmark
 npx ts-node src/test-load-performance.ts

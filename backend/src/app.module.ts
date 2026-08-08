@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { BullModule } from '@nestjs/bullmq';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -20,6 +20,8 @@ import { MalwareModule } from './malware/malware.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ForensicsModule } from './forensics/forensics.module';
 import { SiemModule } from './siem/siem.module';
+import { PlaybooksModule } from './playbooks/playbooks.module';
+import { Taxii2Module } from './taxii2/taxii2.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
@@ -66,6 +68,8 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
     DashboardModule,
     ForensicsModule,
     SiemModule,
+    PlaybooksModule,
+    Taxii2Module,
   ],
   providers: [
     {

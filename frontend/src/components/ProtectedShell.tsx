@@ -15,7 +15,8 @@ import {
   Briefcase,
   Activity,
   Radio,
-  Terminal
+  Terminal,
+  Zap,
 } from 'lucide-react';
 import { DashboardView } from './DashboardView';
 import { AlertsView } from './AlertsView';
@@ -24,11 +25,12 @@ import { DetectionRulesView } from './DetectionRulesView';
 import { AttackMapView } from './AttackMapView';
 import { SearchView } from './SearchView';
 import { MalwareView } from './MalwareView';
+import { PlaybooksView } from './PlaybooksView';
 import { MatrixRainBg } from './MatrixRainBg';
 
 export const ProtectedShell: React.FC = () => {
   const { user, logout, token } = useAuth();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'alerts' | 'cases' | 'map' | 'search' | 'malware' | 'rules' | 'system'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'alerts' | 'cases' | 'playbooks' | 'map' | 'search' | 'malware' | 'rules' | 'system'>('dashboard');
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
 
   const getRoleBadgeColor = (role?: string) => {
@@ -50,6 +52,7 @@ export const ProtectedShell: React.FC = () => {
     { id: 'dashboard', label: 'SOC Dashboard', icon: LayoutDashboard },
     { id: 'alerts', label: 'Alert Stream', icon: AlertTriangle },
     { id: 'cases', label: 'Case Management', icon: Briefcase },
+    { id: 'playbooks', label: 'SOAR Playbooks', icon: Zap },
     { id: 'map', label: 'Live Attack Map', icon: Globe },
     { id: 'search', label: 'Threat Search', icon: Search },
     { id: 'malware', label: 'Malware DB', icon: Database },
@@ -176,6 +179,8 @@ export const ProtectedShell: React.FC = () => {
           />
         )}
 
+        {activeTab === 'playbooks' && <PlaybooksView />}
+
         {activeTab === 'map' && <AttackMapView token={token || ''} />}
 
         {activeTab === 'search' && <SearchView token={token || ''} />}
@@ -197,50 +202,29 @@ export const ProtectedShell: React.FC = () => {
                 <span>SYSTEM ARCHITECTURE & SERVICE BUS TELEMETRY</span>
               </h2>
               <p className="text-xs text-terminal-green-dim">
-                Phase 6 Production-Hardened Infrastructure: PostgreSQL 16 indexed store, OpenSearch 2.13 search mirror, Redis BullMQ queues, self-hosted MISP Threat Sharing, and Groq LLM Advisory Engine.
+                Phase 7 Hardened Infrastructure: PostgreSQL 16 indexed store, OpenSearch 2.13 search mirror, Redis BullMQ queues, SOAR Automated Response Playbooks, VirusTotal v3 API, STIX/TAXII 2.1 Server, Brevo SMTP Alerts, and Dual-Audience Groq LLM Incident Reporter.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
                 <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
                   <span className="text-xs font-mono font-bold text-terminal-green flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5" /> POSTGRESQL 16
+                    <Activity className="w-3.5 h-3.5" /> POSTGRESQL 16 & PRISMA
                   </span>
-                  <p className="text-xs text-terminal-green-dim">Authoritative Relational Store for Core Entities, Indexed Alerts, Cases, IOCs, CVEs, and Append-Only Audit Logs.</p>
+                  <p className="text-xs text-terminal-green-dim">Core Entities, Alerts, Cases, Playbooks, PlaybookExecutions, Forensic Chain of Custody.</p>
                 </div>
 
                 <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
-                  <span className="text-xs font-mono font-bold text-red-400 flex items-center gap-1.5">
-                    <Radio className="w-3.5 h-3.5 text-red-400" /> REDIS 7 + BULLMQ
+                  <span className="text-xs font-mono font-bold text-sky-400 flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-sky-400" /> SOAR AUTOMATED RESPONSE
                   </span>
-                  <p className="text-xs text-terminal-green-dim">Async Threat Feed Ingestion Broker (`sync-otx`, `sync-nvd`, `sync-abusech`, `sync-malware`, `sync-misp`).</p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
-                  <span className="text-xs font-mono font-bold text-amber-400 flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5 text-amber-400" /> GROQ LLM ADVISORY
-                  </span>
-                  <p className="text-xs text-terminal-green-dim">Automated Threat Risk Scoring (`llama-3.3-70b-versatile`) producing natural language severity explanations.</p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
-                  <span className="text-xs font-mono font-bold text-terminal-green flex items-center gap-1.5">
-                    <Search className="w-3.5 h-3.5 text-terminal-green" /> OPENSEARCH MIRROR
-                  </span>
-                  <p className="text-xs text-terminal-green-dim">Full-text search mirror (`ctp-iocs`, `ctp-cves`, `ctp-malware`) with instant database fallback support.</p>
+                  <p className="text-xs text-terminal-green-dim">Event-driven playbook execution, auto-case creation, severity escalation, analyst round-robin, and live SIEM streaming.</p>
                 </div>
 
                 <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
                   <span className="text-xs font-mono font-bold text-purple-400 flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5 text-purple-400" /> NESTJS REST API
+                    <Shield className="w-3.5 h-3.5 text-purple-400" /> STIX 2.1 / TAXII 2.1 SERVER
                   </span>
-                  <p className="text-xs text-terminal-green-dim">Class Validator DTOs, Swagger Docs (`/api/docs`), Per-User Rate Limiting (`@nestjs/throttler`), and Configurable CORS.</p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono">
-                  <span className="text-xs font-mono font-bold text-terminal-green flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-terminal-green" /> SELF-HOSTED MISP
-                  </span>
-                  <p className="text-xs text-terminal-green-dim">Threat-Sharing Platform with Dedicated MariaDB storage & CIRCL OSINT Community Feed Integration.</p>
+                  <p className="text-xs text-terminal-green-dim">TAXII 2.1 Server Discovery & Collection endpoints delivering STIX 2.1 SDOs (`indicator`, `malware`, `vulnerability`).</p>
                 </div>
               </div>
             </div>

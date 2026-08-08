@@ -1,6 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GroqService } from '../llm/groq.service';
+import { PlaybooksService } from '../playbooks/playbooks.service';
+import { SiemPushService } from '../siem/siem-push.service';
+import { EmailAlertService } from '../common/email-alert.service';
 import { Severity, RuleCorrelationType } from '@prisma/client';
 
 @Injectable()
@@ -10,6 +13,10 @@ export class DetectionEngineService {
   constructor(
     private prisma: PrismaService,
     private groqService: GroqService,
+    @Inject(forwardRef(() => PlaybooksService))
+    private playbooksService: PlaybooksService,
+    private siemPushService: SiemPushService,
+    private emailAlertService: EmailAlertService,
   ) {}
 
   async evaluateIoc(iocId: string): Promise<void> {
@@ -303,6 +310,27 @@ export class DetectionEngineService {
     this.logger.log(
       `Created Alert #${alert.id} [Severity: ${alert.severity}] [LLM Advisory: ${alert.llmSuggestedSeverity || 'N/A'}] via Rule '${params.ruleName}'`,
     );
+
+    // Trigger Automated SOAR Playbooks
+    try {
+      await this.playbooksService.evaluateAndExecuteForAlert(alert);
+    } catch (err: any) {
+      this.logger.error(`Error triggering SOAR playbooks for Alert #${alert.id}: ${err.message}`);
+    }
+
+    // Trigger Live SIEM Push for HIGH / CRITICAL alerts
+    if (alert.severity === Severity.HIGH || alert.severity === Severity.CRITICAL) {
+      this.siemPushService.pushAlertToSiem(alert).catch((err) => {
+        this.logger.error(`Error in SIEM push for Alert #${alert.id}: ${err.message}`);
+      });
+    }
+
+    // Trigger Email Alerting for CRITICAL alerts
+    if (alert.severity === Severity.CRITICAL) {
+      this.emailAlertService.sendCriticalAlertEmail(alert).catch((err) => {
+        this.logger.error(`Error in email alert dispatch for Alert #${alert.id}: ${err.message}`);
+      });
+    }
 
     return alert;
   }

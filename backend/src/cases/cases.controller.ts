@@ -49,6 +49,13 @@ export class CasesController {
     return this.casesService.addNote(id, req.user?.id, noteText);
   }
 
+  @Post(':id/generate-report')
+  @Roles(Role.ADMIN, Role.SOC_ANALYST, Role.INVESTIGATOR)
+  @ApiOperation({ summary: 'Generate dual-audience AI incident report for C-Suite and Engineering' })
+  generateReport(@Param('id') id: string) {
+    return this.casesService.generateIncidentReport(id);
+  }
+
   @Patch(':id')
   @Roles(Role.ADMIN, Role.SOC_ANALYST, Role.INVESTIGATOR)
   @ApiOperation({ summary: 'Update security case details/status' })

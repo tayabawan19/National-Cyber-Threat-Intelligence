@@ -20,6 +20,8 @@ import {
   FileText,
   Lock,
   FileSearch,
+  Zap,
+  Cpu,
 } from 'lucide-react';
 
 interface CasesViewProps {
@@ -35,7 +37,32 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
   const [loading, setLoading] = useState(true);
   const [timelineLoading, setTimelineLoading] = useState(false);
   const [forensicsLoading, setForensicsLoading] = useState(false);
-  const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'alerts' | 'iocs' | 'cves' | 'malware' | 'timeline' | 'forensics'>('overview');
+  const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'alerts' | 'iocs' | 'cves' | 'malware' | 'timeline' | 'forensics' | 'report'>('overview');
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [reportAudienceTab, setReportAudienceTab] = useState<'exec' | 'tech'>('exec');
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+
+  const handleGenerateReport = async (caseId: string) => {
+    setGeneratingReport(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/cases/${caseId}/generate-report`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setSelectedCase(updated);
+        setActiveDetailTab('report');
+      } else {
+        alert('Failed to generate incident report');
+      }
+    } catch (err: any) {
+      alert(`Report generation error: ${err.message}`);
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
 
   // New Case Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -66,7 +93,6 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
   const [filterSeverity, setFilterSeverity] = useState('');
 
   const isReadOnly = userRole === 'READ_ONLY';
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
   const fetchCases = async () => {
     setLoading(true);
@@ -487,6 +513,13 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
                 <FileSearch className="w-3.5 h-3.5" />
                 <span>Forensics ({forensicArtifacts.length})</span>
               </button>
+              <button
+                onClick={() => setActiveDetailTab('report')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 ${activeDetailTab === 'report' ? 'bg-sky-900/80 text-sky-300 border border-sky-500/40 glow-green' : 'text-sky-400/80 hover:text-sky-300'}`}
+              >
+                <Cpu className="w-3.5 h-3.5" />
+                <span>AI Incident Report</span>
+              </button>
             </div>
 
             {/* TAB 1: OVERVIEW */}
@@ -752,6 +785,74 @@ export const CasesView: React.FC<CasesViewProps> = ({ token, userRole }) => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 8: AI INCIDENT REPORT */}
+            {activeDetailTab === 'report' && (
+              <div className="space-y-4 font-mono text-xs">
+                <div className="flex items-center justify-between p-3.5 rounded-lg bg-[#050705] border border-terminal-border">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="w-5 h-5 text-sky-400" />
+                    <div>
+                      <span className="font-bold text-sky-400 block text-xs">Dual-Audience AI Incident Report Engine</span>
+                      <span className="text-[10px] text-terminal-green-dim">Powered by Groq LLM (`llama-3.3-70b-versatile`)</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleGenerateReport(selectedCase.id)}
+                    disabled={generatingReport}
+                    className="px-4 py-2 rounded-lg bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-500/40 font-bold transition flex items-center gap-2"
+                  >
+                    <Zap className="w-4 h-4 text-sky-400" />
+                    <span>{generatingReport ? 'Generating via Groq AI...' : 'Generate / Refresh Report'}</span>
+                  </button>
+                </div>
+
+                {selectedCase.incidentReport || selectedCase.report ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 bg-[#050705] p-1 rounded-lg border border-terminal-border w-fit">
+                      <button
+                        onClick={() => setReportAudienceTab('exec')}
+                        className={`px-4 py-1.5 rounded text-xs font-bold transition ${reportAudienceTab === 'exec' ? 'bg-sky-900/80 text-sky-300 border border-sky-500/40' : 'text-terminal-green-dim'}`}
+                      >
+                        👔 C-Suite Executive Summary
+                      </button>
+                      <button
+                        onClick={() => setReportAudienceTab('tech')}
+                        className={`px-4 py-1.5 rounded text-xs font-bold transition ${reportAudienceTab === 'tech' ? 'bg-sky-900/80 text-sky-300 border border-sky-500/40' : 'text-terminal-green-dim'}`}
+                      >
+                        🛠️ Technical Deep-Dive (Engineering)
+                      </button>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-[#050705] border border-terminal-border space-y-3 font-mono leading-relaxed">
+                      {reportAudienceTab === 'exec' ? (
+                        <div className="space-y-2">
+                          <div className="text-[10px] text-sky-400 font-bold uppercase tracking-wider border-b border-sky-900/50 pb-1">
+                            TARGET AUDIENCE: CHIEF EXECUTIVE OFFICER (CEO), CISO & BOARD MEMBERS
+                          </div>
+                          <div className="text-sky-100 text-xs whitespace-pre-wrap leading-relaxed">
+                            {(selectedCase.incidentReport || selectedCase.report).executiveSummary}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider border-b border-emerald-900/50 pb-1">
+                            TARGET AUDIENCE: SOC OPERATIONS TEAM, THREAT ANALYSTS & FORENSIC ENGINEERS
+                          </div>
+                          <div className="text-emerald-100 text-xs whitespace-pre-wrap leading-relaxed">
+                            {(selectedCase.incidentReport || selectedCase.report).technicalDetails}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-terminal-muted italic bg-[#050705] rounded-xl border border-terminal-border">
+                    No incident report generated yet for Case #{selectedCase.id.slice(0, 8)}. Click "Generate / Refresh Report" above.
                   </div>
                 )}
               </div>

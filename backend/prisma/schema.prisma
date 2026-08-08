@@ -86,6 +86,7 @@ model Case {
   alerts            Alert[]
   iocs              Ioc[]
   forensicArtifacts ForensicArtifact[]
+  incidentReport    Json?              @map("incident_report")
 
   @@index([status])
   @@index([severity])
@@ -120,6 +121,7 @@ model Alert {
   relatedCase          Case?              @relation(fields: [relatedCaseId], references: [id], onDelete: SetNull)
 
   forensicArtifacts    ForensicArtifact[]
+  playbookExecutions   PlaybookExecution[]
 
   createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime       @updatedAt @map("updated_at")
@@ -194,8 +196,10 @@ model MalwareSample {
   
   relatedIocId  String?   @map("related_ioc_id")
   relatedIoc    Ioc?      @relation(fields: [relatedIocId], references: [id], onDelete: SetNull)
-  relatedCveIds String[]  @default([]) @map("related_cve_ids")
-  rawPayload    Json?     @map("raw_payload")
+  relatedCveIds   String[]  @default([]) @map("related_cve_ids")
+  rawPayload      Json?     @map("raw_payload")
+  vtScanResult    Json?     @map("vt_scan_result")
+  vtLastScannedAt DateTime? @map("vt_last_scanned_at")
 
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
@@ -292,3 +296,34 @@ model ForensicArtifact {
 
   @@map("forensic_artifacts")
 }
+
+model Playbook {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  description      String?
+  triggerCondition Json     @map("trigger_condition")
+  actions          Json
+  enabled          Boolean  @default(true)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  executions PlaybookExecution[]
+
+  @@map("playbooks")
+}
+
+model PlaybookExecution {
+  id         String   @id @default(uuid())
+  playbookId String   @map("playbook_id")
+  playbook   Playbook @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  alertId    String   @map("alert_id")
+  alert      Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  actionsRan Json     @map("actions_ran")
+  status     String
+  executedAt DateTime @default(now()) @map("executed_at")
+
+  @@index([playbookId])
+  @@index([alertId])
+  @@map("playbook_executions")
+}
+

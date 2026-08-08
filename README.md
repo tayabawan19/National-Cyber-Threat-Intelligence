@@ -4,6 +4,14 @@ An enterprise AI-assisted Security Operations Center (SOC) threat intelligence p
 
 ---
 
+## 🖼️ User Interface Preview
+
+![National Cyber Threat Intelligence Platform Login Portal](docs/images/login_page.png)
+
+*High-density dark mode SOC Command Shell authentication interface featuring matrix digital rain telemetry background, role-based access control selector, and JWT bearer security.*
+
+---
+
 ## 🎯 Current Status: Phases 0–7 Complete & Verified
 
 | Phase | Module / Capability | Status |
@@ -119,12 +127,12 @@ npx ts-node src/run-all-syncs.ts
 npx ts-node src/fetch-circl-osint-feed.ts
 ```
 
-### 4. Access Platform Interfaces
-- **SOC Web Shell**: [http://localhost:5173](http://localhost:5173)
-- **API Swagger Documentation**: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
-- **TAXII 2.1 Discovery API**: [http://localhost:3000/api/taxii2/](http://localhost:3000/api/taxii2/)
-- **MISP Threat-Sharing Web UI**: [http://localhost:8443](http://localhost:8443)
-- **OpenSearch Cluster**: [http://localhost:9200](http://localhost:9200)
+### 4. Service Endpoints & Interfaces
+- **SOC Web Shell UI**: `Port 5173` (e.g. `http://<HOST_IP>:5173`)
+- **API Swagger Documentation**: `/api/docs` (e.g. `http://<HOST_IP>:3000/api/docs`)
+- **TAXII 2.1 Discovery Endpoint**: `/api/taxii2/` (e.g. `http://<HOST_IP>:3000/api/taxii2/`)
+- **MISP Threat-Sharing Web UI**: `Port 8443` (e.g. `http://<HOST_IP>:8443`)
+- **OpenSearch Cluster API**: `Port 9200` (e.g. `http://<HOST_IP>:9200`)
 
 ---
 

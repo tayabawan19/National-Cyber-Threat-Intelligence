@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { io, Socket } from 'socket.io-client';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -17,6 +18,7 @@ import {
   Plus,
   Radio,
   Terminal,
+  Zap,
 } from 'lucide-react';
 
 interface AlertsViewProps {
@@ -38,6 +40,8 @@ export const AlertsView: React.FC<AlertsViewProps> = ({
   const [selectedAlert, setSelectedAlert] = useState<any | null>(null);
   const [filterSeverity, setFilterSeverity] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
+  const [flashAlertId, setFlashAlertId] = useState<string | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
 
   // Attach to case state
   const [selectedCaseIdToAttach, setSelectedCaseIdToAttach] = useState<string>('');
@@ -45,6 +49,7 @@ export const AlertsView: React.FC<AlertsViewProps> = ({
 
   const isReadOnly = userRole === 'READ_ONLY';
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+  const WS_URL = API_BASE_URL.replace('/api', '');
 
   const fetchAlerts = async () => {
     setLoading(true);
@@ -81,6 +86,53 @@ export const AlertsView: React.FC<AlertsViewProps> = ({
     fetchAlerts();
     fetchCasesList();
   }, [filterSeverity, filterStatus, token]);
+
+  // Real-time WebSocket setup
+  useEffect(() => {
+    let socket: Socket | null = null;
+    try {
+      socket = io(WS_URL, {
+        query: { token },
+        transports: ['websocket', 'polling'],
+      });
+
+      socket.on('connect', () => {
+        console.log('[WEBSOCKET CONNECTED] Real-time alert stream online');
+        setSocketConnected(true);
+      });
+
+      socket.on('disconnect', () => {
+        setSocketConnected(false);
+      });
+
+      socket.on('alert:created', (data: any) => {
+        if (data && data.alert) {
+          const newAlert = data.alert;
+          setAlerts((prev) => {
+            if (prev.some((a) => a.id === newAlert.id)) return prev;
+            return [newAlert, ...prev];
+          });
+          setFlashAlertId(newAlert.id);
+          setTimeout(() => setFlashAlertId(null), 4000);
+        }
+      });
+
+      socket.on('alert:updated', (data: any) => {
+        if (data && data.alert) {
+          const updatedAlert = data.alert;
+          setAlerts((prev) =>
+            prev.map((a) => (a.id === updatedAlert.id ? { ...a, ...updatedAlert } : a)),
+          );
+        }
+      });
+    } catch (err) {
+      console.error('Failed to establish WebSocket connection', err);
+    }
+
+    return () => {
+      if (socket) socket.disconnect();
+    };
+  }, [token, WS_URL]);
 
   const fetchAlertDetail = async (id: string) => {
     try {
@@ -164,10 +216,19 @@ export const AlertsView: React.FC<AlertsViewProps> = ({
         <div>
           <h2 className="text-sm font-bold font-mono text-terminal-green flex items-center gap-2 text-glow-green">
             <Radio className="w-5 h-5 text-terminal-green" />
-            <span>REAL-TIME THREAT ALERTS & AI COPILOT STREAM</span>
+            <span>REAL-TIME THREAT ALERTS & WEBSOCKET STREAM</span>
+            <span
+              className={`px-2 py-0.5 rounded text-[9px] font-mono border ${
+                socketConnected
+                  ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/40'
+                  : 'bg-amber-950/80 text-amber-400 border-amber-500/40'
+              }`}
+            >
+              {socketConnected ? 'WS LIVE PUSH ACTIVE' : 'CONNECTING WS...'}
+            </span>
           </h2>
           <p className="text-xs text-terminal-green-dim mt-0.5 font-mono">
-            Deduplicated security events correlated across detection rules and Groq LLM Advisory engine.
+            Deduplicated security events correlated across detection rules, ATT&CK framework, and Groq LLM Advisory.
           </p>
         </div>
 
@@ -224,6 +285,7 @@ export const AlertsView: React.FC<AlertsViewProps> = ({
                   <tr>
                     <th className="py-3.5 px-4">Severity</th>
                     <th className="py-3.5 px-4">Alert Description</th>
+                    <th className="py-3.5 px-4">MITRE ATT&CK®</th>
                     <th className="py-3.5 px-4">Case Linked</th>
                     <th className="py-3.5 px-4">Count</th>
                     <th className="py-3.5 px-4">Status</th>
@@ -231,52 +293,82 @@ export const AlertsView: React.FC<AlertsViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-terminal-border/80">
-                  {alerts.map((item) => (
-                    <tr
-                      key={item.id}
-                      onClick={() => fetchAlertDetail(item.id)}
-                      className={`hover:bg-terminal-surface cursor-pointer transition ${selectedAlert?.id === item.id ? 'bg-terminal-green-dark/60 border-l-4 border-terminal-green' : ''}`}
-                    >
-                      <td className="py-3.5 px-4">
-                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${getSeverityBadge(item.severity)}`}>
-                          {item.severity}
-                        </span>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <div className="space-y-0.5">
-                          <p className="text-terminal-green font-mono font-semibold truncate max-w-md">{item.description}</p>
-                          <span className="text-[10px] text-terminal-green-dim">Source: {item.source} • Rule: {item.rule?.name || 'Automated Engine'}</span>
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        {item.relatedCase ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] bg-terminal-green-dark text-terminal-green border border-terminal-border font-semibold truncate max-w-[120px] inline-block">
-                            {item.relatedCase.title}
+                  {alerts.map((item) => {
+                    const isFlashing = flashAlertId === item.id;
+                    return (
+                      <tr
+                        key={item.id}
+                        onClick={() => fetchAlertDetail(item.id)}
+                        className={`hover:bg-terminal-surface cursor-pointer transition ${
+                          selectedAlert?.id === item.id ? 'bg-terminal-green-dark/60 border-l-4 border-terminal-green' : ''
+                        } ${
+                          isFlashing ? 'bg-amber-950/90 animate-pulse border-l-4 border-amber-400 shadow-lg shadow-amber-500/50' : ''
+                        }`}
+                      >
+                        <td className="py-3.5 px-4">
+                          <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${getSeverityBadge(item.severity)}`}>
+                            {item.severity}
                           </span>
-                        ) : (
-                          <span className="text-[10px] text-terminal-muted">Unlinked</span>
-                        )}
-                      </td>
+                        </td>
 
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded text-[10px] bg-[#050705] text-terminal-green border border-terminal-border font-bold">
-                          x{item.occurrenceCount || 1}
-                        </span>
-                      </td>
+                        <td className="py-3.5 px-4">
+                          <div className="space-y-0.5">
+                            <p className="text-terminal-green font-mono font-semibold truncate max-w-md">{item.description}</p>
+                            <span className="text-[10px] text-terminal-green-dim">Source: {item.source} • Rule: {item.rule?.name || 'Automated Engine'}</span>
+                          </div>
+                        </td>
 
-                      <td className="py-3.5 px-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${item.status === 'NEW' ? 'bg-amber-950/80 text-amber-400 border-amber-500/40' : item.status === 'TRIAGED' ? 'bg-terminal-green-dark text-terminal-green border-terminal-border' : 'bg-emerald-950/80 text-emerald-400 border-emerald-500/40'}`}>
-                          {item.status}
-                        </span>
-                      </td>
+                        <td className="py-3.5 px-4">
+                          {item.attackTechniqueIds && item.attackTechniqueIds.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {item.attackTechniqueIds.map((tId: string) => (
+                                <a
+                                  key={tId}
+                                  href={`https://attack.mitre.org/techniques/${tId}/`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-purple-950/80 text-purple-300 border border-purple-500/40 hover:bg-purple-900 transition flex items-center gap-1"
+                                  title={`View ${tId} on MITRE ATT&CK`}
+                                >
+                                  <span>{tId}</span>
+                                  <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-terminal-muted">-</span>
+                          )}
+                        </td>
 
-                      <td className="py-3.5 px-4 text-terminal-green-dim">
-                        <ChevronRight className="w-4 h-4 text-terminal-green" />
-                      </td>
-                    </tr>
-                  ))}
+                        <td className="py-3.5 px-4">
+                          {item.relatedCase ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] bg-terminal-green-dark text-terminal-green border border-terminal-border font-semibold truncate max-w-[120px] inline-block">
+                              {item.relatedCase.title}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-terminal-muted">Unlinked</span>
+                          )}
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <span className="px-2 py-0.5 rounded text-[10px] bg-[#050705] text-terminal-green border border-terminal-border font-bold">
+                            x{item.occurrenceCount || 1}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${item.status === 'NEW' ? 'bg-amber-950/80 text-amber-400 border-amber-500/40' : item.status === 'TRIAGED' ? 'bg-terminal-green-dark text-terminal-green border-terminal-border' : 'bg-emerald-950/80 text-emerald-400 border-emerald-500/40'}`}>
+                            {item.status}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-4 text-terminal-green-dim">
+                          <ChevronRight className="w-4 h-4 text-terminal-green" />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -309,7 +401,31 @@ export const AlertsView: React.FC<AlertsViewProps> = ({
               </button>
             </div>
 
-            {/* Groq AI Copilot Summary Box — Styled as Terminal stdout dump */}
+            {/* MITRE ATT&CK Badges in Drawer */}
+            {selectedAlert.attackTechniqueIds && selectedAlert.attackTechniqueIds.length > 0 && (
+              <div className="p-3 rounded-lg bg-[#050705] border border-purple-500/30 space-y-2">
+                <span className="text-[10px] font-bold text-purple-300 uppercase tracking-wider block">
+                  MITRE ATT&CK® TECHNIQUE MAPPING
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {selectedAlert.attackTechniqueIds.map((tId: string) => (
+                    <a
+                      key={tId}
+                      href={`https://attack.mitre.org/techniques/${tId}/`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2.5 py-1 rounded text-xs font-mono bg-purple-950 text-purple-300 border border-purple-500/50 hover:bg-purple-900 transition flex items-center gap-1.5"
+                    >
+                      <Zap className="w-3.5 h-3.5 text-purple-400" />
+                      <span>{tId}</span>
+                      <ExternalLink className="w-3 h-3 text-purple-400" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Groq AI Copilot Summary Box */}
             {selectedAlert.llmExplanation && (
               <div className="p-4 rounded-lg bg-[#050705] border border-terminal-border space-y-2 font-mono glow-green">
                 <div className="flex items-center gap-2 text-terminal-green text-[10px] font-bold uppercase tracking-wider text-glow-green">

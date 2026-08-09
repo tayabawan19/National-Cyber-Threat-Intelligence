@@ -1,6 +1,6 @@
 # National Cyber Threat Intelligence Platform
 
-An enterprise AI-assisted Security Operations Center (SOC) threat intelligence platform built to aggregate live threat feeds, detect multi-vector cyber threats, correlate malware & vulnerabilities, manage digital forensics with immutable chain-of-custody, execute automated SOAR response playbooks, stream live SIEM events, provide STIX/TAXII 2.1 threat sharing, and generate dual-audience AI incident reports.
+An enterprise AI-assisted Security Operations Center (SOC) threat intelligence platform built to aggregate live threat feeds, detect multi-vector cyber threats, correlate malware & vulnerabilities, manage digital forensics with immutable chain-of-custody, execute automated SOAR response playbooks, stream live SIEM events, provide STIX/TAXII 2.1 threat sharing, compute statistical anomaly Z-Scores, map MITRE ATT&CK® techniques onto a live Heatmap Matrix, cluster threat campaigns with heuristic confidence scoring, push real-time WebSocket updates, and generate dual-audience AI incident reports.
 
 ---
 
@@ -12,7 +12,7 @@ An enterprise AI-assisted Security Operations Center (SOC) threat intelligence p
 
 ---
 
-## 🎯 Current Status: Phases 0–7 Complete & Verified
+## 🎯 Current Status: Phases 0–9 Complete & Verified
 
 | Phase | Module / Capability | Status |
 | :--- | :--- | :---: |
@@ -24,12 +24,15 @@ An enterprise AI-assisted Security Operations Center (SOC) threat intelligence p
 | **Phase 5** | Digital Forensics Module, SIEM Export Stub & Self-Hosted MISP Integration | ✅ Verified |
 | **Phase 6** | Hardening, Production Deployment Prep, Load Testing & Security Audit | ✅ Verified |
 | **Phase 7** | SOAR Response Playbooks, Live SIEM Push, VirusTotal Scanning, Brevo SMTP Alerts, STIX/TAXII 2.1 & Dual-Audience AI Incident Reports | ✅ Verified |
+| **Phase 8** | Statistical Anomaly Detection Engine (Z-Score Rolling Window Outlier Analysis) | ✅ Verified |
+| **Phase 9** | MITRE ATT&CK Technique Mapping & Heatmap, Threat Campaign Heuristic Clustering & Real-time WebSocket Push Updates | ✅ Verified |
 
 ---
 
 ## 🛠️ Technology Stack
 
 - **Backend Framework**: NestJS (TypeScript), REST APIs, Class Validator DTOs, Swagger/OpenAPI (`/api/docs`), `@nestjs/throttler` Rate Limiting
+- **Real-time WebSockets**: `@nestjs/websockets`, `@nestjs/platform-socket.io`, `socket.io`, `socket.io-client` with JWT authentication and role-based payload sanitization
 - **Frontend Shell**: React 18, Vite, TypeScript, Vanilla CSS, Lucide React Icons
 - **Primary Database & ORM**: PostgreSQL 16, Prisma ORM (Indexed for high-concurrency queries)
 - **Threat-Sharing Platform**: Self-Hosted MISP + Dedicated MariaDB 10.11 database
@@ -43,15 +46,19 @@ An enterprise AI-assisted Security Operations Center (SOC) threat intelligence p
 
 ## ✨ Core Features
 
+- **MITRE ATT&CK® Enterprise Matrix & Heatmap**: Official STIX ATT&CK reference techniques (`attack_techniques` DB store) mapped across 12 tactics. Detection rules and alerts are tagged with technique IDs and rendered on an interactive visual Heatmap Matrix with heat intensity indicators and direct link-outs to `attack.mitre.org`.
+- **Threat Campaign Heuristic Clustering**: Rule-based clustering engine linking correlated alerts, IOCs, malware samples, and CVEs into unified campaign timelines with an explicit mathematical confidence score weighting formula ($0.45 \text{ Base} + 0.25 \text{ Malware Family} + 0.15 \text{ ATT\&CK Overlap} + 0.07 \text{ Multi-Source} + 0.05 \text{ Volume}$).
+- **Real-time WebSocket Push Stream**: NestJS Socket.IO gateway pushing live events (`alert:created`, `alert:updated`, `campaign:updated`, `feed_sync:completed`, `playbook:completed`) with glowing terminal flash animations on arrival, replacing dashboard polling. Enforces strict RBAC over socket connections.
+- **Statistical Anomaly Detection Engine**: Rolling Z-Score calculation engine ($\mathbf{Z = (x - \mu) / \sigma}$) measuring ingestion velocity spikes and CVSS distribution outliers.
 - **Live Threat Feed Ingestion**: Collectors for AlienVault OTX, NVD CVE 2.0, abuse.ch FeodoTracker, abuse.ch MalwareBazaar, and self-hosted MISP threat-sharing feeds with path-status tagging (`LIVE_API_SUCCESS` / `LIVE_API_FAILED_USED_FALLBACK`).
-- **Multi-Vector Detection Engine**: Configurable rule engine supporting `SIMPLE`, `MULTI_CONDITION`, `THRESHOLD`, and cross-feed `CORRELATION` detection rules.
+- **Multi-Vector Detection Engine**: Configurable rule engine supporting `SIMPLE`, `MULTI_CONDITION`, `THRESHOLD`, `STATISTICAL_ANOMALY`, and cross-feed `CORRELATION` detection rules.
 - **Malware Repository & VirusTotal Scanner**: In-depth malware sample metadata linked relationally to CVE vulnerabilities, IOCs, and VirusTotal v3 API reputation verdicts (`POST /api/malware/:id/scan`).
 - **SOAR Automated Response Playbooks**: Event-driven playbook execution engine supporting auto-case creation, severity escalation, analyst round-robin assignment, and live SIEM streaming (`/api/playbooks`).
 - **Live SIEM Push Integrations**: Automated HTTP POST streaming to Splunk HEC (`:8088`) and Wazuh Manager API (`:55000`) on `HIGH` and `CRITICAL` alerts.
 - **STIX 2.1 / TAXII 2.1 Threat Sharing Server**: Normalized STIX 2.1 Cyber Threat Intelligence objects (`indicator`, `malware`, `vulnerability`) exposed via TAXII 2.1 Discovery & Collection REST endpoints (`/api/taxii2/`).
 - **Transactional Email Alerting (Brevo SMTP)**: Automated HTML email alerts sent to `ADMIN` and `INVESTIGATOR` users upon `CRITICAL` alert creation.
 - **Dual-Audience AI Incident Reports**: Groq LLM-powered incident reporter (`POST /api/cases/:id/generate-report`) producing plain-language C-Suite Executive Summaries and Engineering Technical Deep-Dives.
-- **SOC Analyst Command Shell**: High-density dashboard, live spatial attack map visualization, global threat search, real-time alert triage, and SOAR builder UI.
+- **SOC Analyst Command Shell**: High-density dashboard, live spatial attack map visualization, global threat search, real-time alert triage, ATT&CK heatmap, campaign explorer, and SOAR builder UI.
 - **Digital Forensics Module**: Immutable forensic artifact registry (`LOG_FILE`, `MEMORY_DUMP_META`, `NETWORK_CAPTURE_META`, `FILE_METADATA`) with strict append-only chain-of-custody tracking. Rejects past entry editing or deletion.
 - **Role-Based Access Control (RBAC)**: Fine-grained permissions across `ADMIN`, `INVESTIGATOR`, `SOC_ANALYST`, and `READ_ONLY` roles.
 
@@ -114,7 +121,7 @@ docker-compose up -d --build
 ```bash
 cd backend
 npx prisma db push
-npx prisma db seed
+npx ts-node prisma/seed.ts
 ```
 
 ### 3. Trigger Explicit Data Ingestion
@@ -130,6 +137,9 @@ npx ts-node src/fetch-circl-osint-feed.ts
 ### 4. Service Endpoints & Interfaces
 - **SOC Web Shell UI**: `Port 5173` (e.g. `http://<HOST_IP>:5173`)
 - **API Swagger Documentation**: `/api/docs` (e.g. `http://<HOST_IP>:3000/api/docs`)
+- **MITRE ATT&CK Matrix API**: `/api/attack-techniques/matrix`
+- **Threat Campaigns API**: `/api/campaigns`
+- **Real-time WebSocket Gateway**: `ws://<HOST_IP>:3000` (Socket.IO namespace `/`)
 - **TAXII 2.1 Discovery Endpoint**: `/api/taxii2/` (e.g. `http://<HOST_IP>:3000/api/taxii2/`)
 - **MISP Threat-Sharing Web UI**: `Port 8443` (e.g. `http://<HOST_IP>:8443`)
 - **OpenSearch Cluster API**: `Port 9200` (e.g. `http://<HOST_IP>:9200`)
@@ -142,6 +152,12 @@ Run the automated verification scripts inside the `backend/` directory:
 
 ```bash
 cd backend
+
+# Run Phase 9 ATT&CK Mapping, Threat Campaign Clustering & Real-time WebSocket Suite
+npx ts-node src/test-phase9-verification.ts
+
+# Run Phase 8 Statistical Anomaly Detection Engine Verification Suite
+npx ts-node src/test-phase8-verification.ts
 
 # Run Phase 7 Automated Response, STIX/TAXII 2.1 & AI Report Suite
 npx ts-node src/test-phase7-verification.ts
@@ -166,7 +182,7 @@ npx ts-node src/test-rbac-403.ts
 
 ## 👥 Project Team
 
-Designed and developed by a 3-person engineering team for National Cyber Threat Intelligence & SOC Operations.
+Designed and developed by Tayabawan for National Cyber Threat Intelligence & SOC Operations.
 
 ---
 

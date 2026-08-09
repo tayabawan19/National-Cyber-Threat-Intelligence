@@ -107,6 +107,7 @@ model Alert {
   lastSeen             DateTime       @default(now()) @map("last_seen")
   llmExplanation       String?        @db.Text @map("llm_explanation")
   llmSuggestedSeverity Severity?      @map("llm_suggested_severity")
+  attackTechniqueIds   String[]       @default([]) @map("attack_technique_ids")
   
   sourceIocId          String?        @map("source_ioc_id")
   sourceIoc            Ioc?           @relation(fields: [sourceIocId], references: [id], onDelete: SetNull)
@@ -121,6 +122,9 @@ model Alert {
   relatedCaseId        String?            @map("related_case_id")
   relatedCase          Case?              @relation(fields: [relatedCaseId], references: [id], onDelete: SetNull)
 
+  campaignId           String?        @map("campaign_id")
+  campaign             Campaign?      @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
   forensicArtifacts    ForensicArtifact[]
   playbookExecutions   PlaybookExecution[]
 
@@ -131,23 +135,25 @@ model Alert {
   @@index([severity])
   @@index([lastSeen])
   @@index([sourceIocId])
+  @@index([campaignId])
 
   @@map("alerts")
 }
 
 model DetectionRule {
-  id              String              @id @default(uuid())
-  name            String              @unique
-  description     String?
-  condition       Json
-  severity        Severity            @default(HIGH)
-  correlationType RuleCorrelationType @default(SIMPLE) @map("correlation_type")
-  enabled         Boolean             @default(true)
+  id                 String              @id @default(uuid())
+  name               String              @unique
+  description        String?
+  condition          Json
+  severity           Severity            @default(HIGH)
+  correlationType    RuleCorrelationType @default(SIMPLE) @map("correlation_type")
+  enabled            Boolean             @default(true)
+  attackTechniqueIds String[]            @default([]) @map("attack_technique_ids")
 
-  createdAt       DateTime            @default(now()) @map("created_at")
-  updatedAt       DateTime            @updatedAt @map("updated_at")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
 
-  alerts          Alert[]
+  alerts             Alert[]
 
   @@map("detection_rules")
 }
@@ -167,6 +173,8 @@ model Ioc {
   rawPayload    Json?           @map("raw_payload")
   relatedCaseId String?         @map("related_case_id")
   relatedCase   Case?           @relation(fields: [relatedCaseId], references: [id], onDelete: SetNull)
+  campaignId    String?         @map("campaign_id")
+  campaign      Campaign?       @relation(fields: [campaignId], references: [id], onDelete: SetNull)
 
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
@@ -178,6 +186,7 @@ model Ioc {
   @@index([type])
   @@index([source])
   @@index([lastSeen])
+  @@index([campaignId])
 
   @@map("iocs")
 }
@@ -201,13 +210,51 @@ model MalwareSample {
   rawPayload      Json?     @map("raw_payload")
   vtScanResult    Json?     @map("vt_scan_result")
   vtLastScannedAt DateTime? @map("vt_last_scanned_at")
+  campaignId      String?   @map("campaign_id")
+  campaign        Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
 
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
   alerts        Alert[]
 
+  @@index([campaignId])
+
   @@map("malware_samples")
+}
+
+model AttackTechnique {
+  id          String   @id
+  techniqueId String   @unique @map("technique_id")
+  name        String
+  tactic      String
+  description String?  @db.Text
+  url         String?
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("attack_techniques")
+}
+
+model Campaign {
+  id                 String          @id @default(uuid())
+  name               String
+  description        String?         @db.Text
+  status             String          @default("ACTIVE")
+  firstSeen          DateTime        @default(now()) @map("first_seen")
+  lastSeen           DateTime        @default(now()) @map("last_seen")
+  attackTechniqueIds String[]        @default([]) @map("attack_technique_ids")
+  confidence         Float           @default(0.85)
+
+  alerts             Alert[]
+  iocs               Ioc[]
+  malwareSamples     MalwareSample[]
+
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  @@map("campaigns")
 }
 
 model Cve {

@@ -22,6 +22,9 @@ import { ForensicsModule } from './forensics/forensics.module';
 import { SiemModule } from './siem/siem.module';
 import { PlaybooksModule } from './playbooks/playbooks.module';
 import { Taxii2Module } from './taxii2/taxii2.module';
+import { EventsModule } from './events/events.module';
+import { AttackTechniquesModule } from './attack-techniques/attack-techniques.module';
+import { CampaignsModule } from './campaigns/campaigns.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
@@ -70,6 +73,9 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
     SiemModule,
     PlaybooksModule,
     Taxii2Module,
+    EventsModule,
+    AttackTechniquesModule,
+    CampaignsModule,
   ],
   providers: [
     {

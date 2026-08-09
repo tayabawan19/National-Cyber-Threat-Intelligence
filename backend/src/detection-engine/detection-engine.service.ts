@@ -4,6 +4,7 @@ import { GroqService } from '../llm/groq.service';
 import { PlaybooksService } from '../playbooks/playbooks.service';
 import { SiemPushService } from '../siem/siem-push.service';
 import { EmailAlertService } from '../common/email-alert.service';
+import { EventsGateway } from '../events/events.gateway';
 import { Severity, RuleCorrelationType } from '@prisma/client';
 
 export interface AnomalyResult {
@@ -27,6 +28,8 @@ export class DetectionEngineService {
     private playbooksService: PlaybooksService,
     private siemPushService: SiemPushService,
     private emailAlertService: EmailAlertService,
+    @Inject(forwardRef(() => EventsGateway))
+    private eventsGateway: EventsGateway,
   ) {}
 
   async evaluateIoc(iocId: string): Promise<void> {
@@ -417,6 +420,14 @@ export class DetectionEngineService {
     }
     llmSuggestedSeverity = await this.groqService.suggestSeverity(threatCtx);
 
+    let attackTechniqueIds: string[] = [];
+    if (params.ruleId) {
+      const rule = await this.prisma.detectionRule.findUnique({ where: { id: params.ruleId } });
+      if (rule && rule.attackTechniqueIds) {
+        attackTechniqueIds = rule.attackTechniqueIds;
+      }
+    }
+
     const alert = await this.prisma.alert.create({
       data: {
         source: params.source,
@@ -428,12 +439,25 @@ export class DetectionEngineService {
         lastSeen: new Date(),
         llmExplanation,
         llmSuggestedSeverity,
+        attackTechniqueIds,
         sourceIocId: params.sourceIocId || null,
         sourceCveId: params.sourceCveId || null,
         sourceMalwareId: params.sourceMalwareId || null,
         ruleId: params.ruleId,
       },
+      include: {
+        sourceIoc: true,
+        sourceCve: true,
+        sourceMalware: true,
+      },
     });
+
+    // Broadcast Real-time WebSocket Push Event
+    try {
+      this.eventsGateway.broadcastAlertCreated(alert);
+    } catch (err: any) {
+      this.logger.error(`Error broadcasting WebSocket alert event: ${err.message}`);
+    }
 
     // Trigger Automated SOAR Playbooks
     try {

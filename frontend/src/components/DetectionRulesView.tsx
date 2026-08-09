@@ -12,8 +12,15 @@ interface Rule {
   condition: any;
 }
 
-export const DetectionRulesView: React.FC = () => {
-  const { token, userRole } = useAuth();
+interface DetectionRulesViewProps {
+  token?: string;
+  userRole?: string;
+}
+
+export const DetectionRulesView: React.FC<DetectionRulesViewProps> = ({ token: propToken, userRole: propUserRole }) => {
+  const { token: authToken, user } = useAuth();
+  const token = propToken || authToken;
+  const userRole = propUserRole || user?.role;
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

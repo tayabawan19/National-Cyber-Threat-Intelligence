@@ -28,9 +28,13 @@ import { MalwareView } from './MalwareView';
 import { PlaybooksView } from './PlaybooksView';
 import { MatrixRainBg } from './MatrixRainBg';
 
+import { AttackMatrixView } from './AttackMatrixView';
+import { CampaignsView } from './CampaignsView';
+import { ShieldAlert } from 'lucide-react';
+
 export const ProtectedShell: React.FC = () => {
   const { user, logout, token } = useAuth();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'alerts' | 'cases' | 'playbooks' | 'map' | 'search' | 'malware' | 'rules' | 'system'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'alerts' | 'cases' | 'playbooks' | 'matrix' | 'campaigns' | 'map' | 'search' | 'malware' | 'rules' | 'system'>('dashboard');
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
 
   const getRoleBadgeColor = (role?: string) => {
@@ -51,6 +55,8 @@ export const ProtectedShell: React.FC = () => {
   const navItems = [
     { id: 'dashboard', label: 'SOC Dashboard', icon: LayoutDashboard },
     { id: 'alerts', label: 'Alert Stream', icon: AlertTriangle },
+    { id: 'matrix', label: 'ATT&CK Matrix', icon: Layers },
+    { id: 'campaigns', label: 'Threat Campaigns', icon: ShieldAlert },
     { id: 'cases', label: 'Case Management', icon: Briefcase },
     { id: 'playbooks', label: 'SOAR Playbooks', icon: Zap },
     { id: 'map', label: 'Live Attack Map', icon: Globe },
@@ -169,6 +175,19 @@ export const ProtectedShell: React.FC = () => {
             userRole={user?.role}
             selectedAlertId={selectedAlertId}
             onClearSelectedAlert={() => setSelectedAlertId(null)}
+          />
+        )}
+
+        {activeTab === 'matrix' && <AttackMatrixView token={token || ''} />}
+
+        {activeTab === 'campaigns' && (
+          <CampaignsView
+            token={token || ''}
+            userRole={user?.role}
+            onSelectAlert={(alertId) => {
+              setSelectedAlertId(alertId);
+              setActiveTab('alerts');
+            }}
           />
         )}
 
